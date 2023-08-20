@@ -1,0 +1,35 @@
+/* 스타일을 추가하여 요소들을 꾸밀 수 있습니다 */
+body {
+    font-family: Arial, sans-serif;
+  }
+  
+  div {
+    margin: 10px;
+  }
+  
+  label {
+    display: inline-block;
+    width: 100px;
+    font-weight: bold;
+  }
+  
+  input[type="text"] {
+    width: 300px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  button {
+    padding: 8px 16px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  #map {
+    margin-top: 10px;
+  }
+  

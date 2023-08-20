@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>경로 탐색 예제</title>
+  <link rel="stylesheet" href="styles.css">
   <script src="path-to-your-js-file.js"></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
 </head>
