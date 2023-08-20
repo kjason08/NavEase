@@ -1,57 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome To Post Office Locator</title>
-    <link rel="stylesheet" href="style.css">
+  <title>경로 탐색 예제</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
 </head>
 <body>
-    <div id="ipDetails">
-        <p id="ip">IP Address : </p>
-        <div id="details">
-            <div class="first-line">
-                <p id="lat">Lat: </p>
-                <p id="city">City: </p>
-                <p id="org">Organization: </p>
-            </div>
-            <div class="second-line">
-                <p id="long">Long: </p>
-                <p id="region">Region: </p>
-                <p id="hostname">Hostname: </p>
-            </div>
-        </div>
-    </div>
-    <div id="map">
-        <p>Your Current Location</p>
-        <iframe src="https://maps.google.com/maps?q=35.856737, 10.606619&z=15&output=embed"
-        width="90%" 
-        height="800" 
-        frameborder="0" 
-        style="border:0"></iframe>
-    </div>
-    <div id="moreInfo">
-        <p>More Information About You</p>
-        <div>
-            <p id="timeZone">Time Zone:</p>
-            <p id="dateTime">Date And Time:</p>
-            <p id="pinCode">Pincode:</p>
-            <p id="message">Message:</p>
-        </div>
-    </div>
-    <div id="postOfficeList">
-        <p>Post Offices Near You</p>
-        <input type="text" name="" id="searcbox">
-        <div id="postOfficeList">
-            <div class="postOffice-card">
-                <p>Name</p>
-                <p>Branch Type</p>
-                <p>Delivery Status</p>
-                <p>District</p>
-                <p>Division</p>
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script>
+  <div>
+    <label for="start">출발지:</label>
+    <input type="text" id="start" placeholder="출발지 주소">
+    <br>
+    <label for="end">도착지:</label>
+    <input type="text" id="end" placeholder="도착지 주소">
+    <br>
+    <button onclick="calculateRoute()">경로 탐색</button>
+  </div>
+  <div id="map" style="height: 400px;"></div>
+
+  <script>
+    let map;
+    let directionsService;
+    let directionsRenderer;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: {lat: 37.7749, lng: -122.4194}, // San Francisco 좌표
+        zoom: 13
+      });
+
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer.setMap(map);
+    }
+
+    function calculateRoute() {
+      const start = document.getElementById('start').value;
+      const end = document.getElementById('end').value;
+
+      const request = {
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING
+      };
+
+      directionsService.route(request, function(response, status) {
+        if (status === 'OK') {
+          directionsRenderer.setDirections(response);
+        } else {
+          alert('경로를 찾을 수 없습니다: ' + status);
+        }
+      });
+    }
+  </script>
+
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap"></script>
 </body>
 </html>
