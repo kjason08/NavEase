@@ -4,7 +4,7 @@
   <title>경로 탐색 예제</title>
   <link rel="stylesheet" href="styles.css">
   <script src="path-to-your-js-file.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD370tOq8sboin-1-1T5Mb90yBs1URbhXU0&libraries=places"></script>
 </head>
 <body>
   <div>
