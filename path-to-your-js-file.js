@@ -4,14 +4,15 @@ let directionsRenderer;
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
-    center: {lat: 37.7749, lng: -122.4194}, // San Francisco 좌표
-    zoom: 13
+    center: {lat: 37.5665, lng: 126.9780}, // 대한민국 중심 좌표
+    zoom: 7
   });
 
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer();
   directionsRenderer.setMap(map);
 }
+
 
 function calculateRoute() {
   const start = document.getElementById('start').value;
