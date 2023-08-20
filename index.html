@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Current IP</title>
+    <style>
+        *{
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+        body{
+            margin: 0px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .left {
+            width: 50vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background-color: black;
+            padding-left: 2%;
+        }
+        .left img {
+            width: 50vh;
+            align-self: center;
+            margin-top: 10vh;
+        }
+        .left p {
+            color: rgba(184, 188, 204, 1);
+            font-size: 24px;
+            font-weight: 400;
+            margin: 0;
+        }
+        .left h2 {
+            color: rgba(87, 90, 133, 1);
+            font-size: 36px;
+            font-weight: 700;
+        }
+        /* Right Side */
+        .right {
+            display: flex;
+            flex-direction: column;
+            width: 50vw;
+            background: rgba(87, 90, 133, 1);
+            justify-content: center;
+            align-items: center;
+        }
+        .ipAdd {
+            display: flex;
+            font-size: 36px;
+            font-weight: 400;
+        }
+        #text {
+           color: rgba(184, 188, 204, 1);
+        }
+        #ip {
+            color: rgba(255, 255, 255, 1);
+        }
+        button {
+            color: rgba(184, 188, 204, 1);
+            background-color: transparent;
+            border: 2px solid rgba(184, 188, 204, 1);
+            border-radius: 10px;
+            font-size: 28px;
+            font-weight: 400;
+            padding: 10px 50px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
+    <!-- Script for getting current IP -->
+    <script>
+     
+    /* Add "https://api.ipify.org?format=json" statement
+               this will communicate with the ipify servers in
+               order to retrieve the IP address $.getJSON will
+               load JSON-encoded data from the server using a
+               GET HTTP request */
+                
+    $.getJSON("https://api.ipify.org?format=json", function(data) {
+         
+        // Setting text of element P with id ip
+        $("#ip").html(data.ip);
+
+        localStorage.setItem("currentIp", data.ip);
+    })
+    </script>
+</head>
+<body>
+    <!-- Left Side -->
+    <div class="left">
+        <h2>Post Office Application.</h2>
+        <p>This Application Allows you to extract information about the nearest Post Offices, based on your location.</p>
+        <img src="img/undraw_messenger_re_8bky 1.svg" alt="">
+    </div>
+
+    <!-- Right Side -->
+    <div class="right" id="right">
+        <div class="ipAdd">
+            <p id="text">Your Current IP Address is &ThinSpace;</p>
+            <p id="ip"></p>
+        </div>
+        <a href="./map.html"><button onclick="getIPDetails()">Get Started</button></a>
+        <!-- <button onclick="getIPDetails()">Get Started</button> -->
+    </div>
+</body>
+</html>
