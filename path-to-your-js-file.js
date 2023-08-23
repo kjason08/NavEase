@@ -21,7 +21,7 @@ function calculateRoute() {
   const request = {
     origin: start,
     destination: end,
-    travelMode: google.maps.TravelMode['TRANSIT']
+    travelMode: google.maps.TravelMode['BICYCLING']
   };
 
   directionsService.route(request, function(response, status) {
