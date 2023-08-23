@@ -21,7 +21,7 @@ function calculateRoute() {
   const request = {
     origin: start,
     destination: end,
-    travelMode: google.maps.TravelMode['DRIVING']
+    travelMode: google.maps.TravelMode[DRIVING]
   };
 
   directionsService.route(request, function(response, status) {

@@ -1,0 +1,32 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(10, 40px);
+    gap: 1px;
+    background-color: white;
+    border: 1px solid black;
+}
+
+.grid-cell {
+    width: 40px;
+    height: 40px;
+    border: 1px solid lightgray;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+}
+
+#startButton,
+#resetButton {
+    margin-top: 10px;
+}
