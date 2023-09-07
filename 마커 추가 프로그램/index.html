@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Google Maps Multiple Markers</title>
+    <style>
+        /* 스타일은 필요에 따라 수정 가능합니다. */
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <input type="file" id="fileInput">
+    <button id="loadButton">Load Markers from JSON</button>
+    <button id="saveButton">Save Markers to JSON</button>
+    <script src="script.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDOgEizKc7rmgXErLwNO9ipv9JCHZ8O4b0&callback=initMap"></script>
+</body>
+</html>
+

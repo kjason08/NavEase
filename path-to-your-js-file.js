@@ -24,7 +24,7 @@ function calculateRoute() {
     travelMode: 'TRANSIT'
   };
 
-  directionsService.route(request, function(response, status) {
+  directionsService.route(request, (response, status) => {
     if (status === 'OK') {
       directionsRenderer.setDirections(response);
     } else {
