@@ -10,7 +10,8 @@ class Node:
     def __eq__(self, other):
         return self.position == other.position
 
-def heuristic(node, goal, D=1, D2=2 ** 0.5):  # Diagonal Distance
+# Diagonal Distance
+def heuristic(node, goal, D=1, D2=2 ** 0.5):
     dx = abs(node.position[0] - goal.position[0])
     dy = abs(node.position[1] - goal.position[1])
     return D * (dx + dy) + (D2 - 2 * D) * min(dx, dy)
@@ -75,7 +76,8 @@ def aStar(maze, start, end):
                 nodePosition[1] < 0,
             ]
 
-            if any(within_range_criteria):  # 하나라도 true면 범위 밖임
+            # 하나라도 true면 범위 밖으로 처리
+            if any(within_range_criteria): 
                 continue
 
             # 장애물이 있으면 다른 위치 불러오기
