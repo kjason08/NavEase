@@ -19,7 +19,6 @@ function initMap() {
 }
 
 function addMarker(location, number) {
-    console.log("되는중");
     // 마커 생성
     const marker = new google.maps.Marker({
         position: location,
@@ -29,7 +28,8 @@ function addMarker(location, number) {
 
     // 클릭 이벤트 리스너 추가
     marker.addListener('click', function () {
-        removeMarker(marker);
+        selectedMarker = marker;
+        openModal();
     });
 
     // 마커를 markers 배열에 추가
@@ -44,6 +44,28 @@ function removeMarker(markerToRemove) {
     markerToRemove.setMap(null);
     NUMBER--;
 }
+
+function updateMarker(index, newNumber) {
+    if (index >= 0 && index < markers.length) {
+        const markerInfo = markers[index];
+        markerInfo.number = newNumber;
+        markerInfo.marker.setLabel(newNumber.toString());
+    } else {
+        alert('Invalid marker index');
+    }
+}
+
+function openModal() {
+    const modal = document.getElementById('modal');
+    modal.style.display = 'block';
+}
+
+function closeModal() {
+    const modal = document.getElementById('modal');
+    modal.style.display = 'none';
+}
+
+
 
 function loadMarkersFromJSON(jsonData) {
     // 이전에 추가한 마커 삭제
@@ -91,4 +113,31 @@ document.getElementById('saveButton').addEventListener('click', function () {
     a.href = url;
     a.download = 'markers.json';
     a.click();
+});
+
+// 마커 업데이트
+document.getElementById('updateButton').addEventListener('click', function () {
+    const currentMarkerIndex = parseInt(document.getElementById('currentMarkerIndex').value);
+    const newMarkerIndex = parseInt(document.getElementById('newMarkerIndex').value);
+
+    updateMarker(currentMarkerIndex - 1, newMarkerIndex); // 인덱스를 0부터 시작하므로 1을 빼줍니다.
+    closeModal();
+});
+
+// 모달 다이얼로그에서 추가 버튼 클릭 시
+document.getElementById('addMarkerButton').addEventListener('click', function () {
+    if (selectedMarker) {
+        const newIndex = markers.length;
+        addMarker(selectedMarker.getPosition(), newIndex + 1);
+    }
+    closeModal();
+});
+
+// 모달 다이얼로그에서 제거 버튼 클릭 시
+document.getElementById('removeMarkerButton').addEventListener('click', function () {
+    if (selectedMarker) {
+        removeMarker(selectedMarker);
+        selectedMarker = null;
+    }
+    closeModal();
 });
