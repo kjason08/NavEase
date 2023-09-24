@@ -12,28 +12,33 @@ function initMap() {
 
     // 클릭 이벤트 리스너 추가
     map.addListener('click', function (event) {
-        addMarker(event.latLng, NUMBER);
+        addMarker(event.latLng, NUMBER, 0);
         NUMBER++;
     });
 
 }
 
-function addMarker(location, number) {
+function addMarker(location, number, cValue) {
     // 마커 생성
     const marker = new google.maps.Marker({
         position: location,
         map: map,
-        label: number.toString() // 마커 레이블로 번호 표시
-    });
-
-    // 클릭 이벤트 리스너 추가
-    marker.addListener('click', function () {
-        selectedMarker = marker;
-        openModal();
+        label: number.toString(), // 마커 레이블로 번호 표시
+        customValue: cValue
     });
 
     // 마커를 markers 배열에 추가
     markers.push({ number, marker });
+
+    openModal(number);
+
+    // 클릭 이벤트 리스너 추가
+    marker.addListener('click', function () {
+        selectedMarker = marker;
+        openModal(number);
+    });
+
+    
 }
 
 function removeMarker(markerToRemove) {
@@ -45,19 +50,50 @@ function removeMarker(markerToRemove) {
     NUMBER--;
 }
 
-function updateMarker(index, newNumber) {
+function updateMarker(index, cValue) {
     if (index >= 0 && index < markers.length) {
         const markerInfo = markers[index];
-        markerInfo.number = newNumber;
-        markerInfo.marker.setLabel(newNumber.toString());
+        markerInfo.customValue = cValue;
+        console.log(markers)
     } else {
-        alert('Invalid marker index');
+        alert('Invalid marker index');  
     }
 }
 
-function openModal() {
+function openModal(index) {
     const modal = document.getElementById('modal');
     modal.style.display = 'block';
+
+    // 모달 다이얼로그에서 0 버튼 클릭 시
+    document.getElementById('put0').addEventListener('click', function () {
+        index = markers[index-1].marker.label
+        updateMarker(index-1, 0)
+        closeModal();
+    });
+    // 모달 다이얼로그에서 100 버튼 클릭 시
+    document.getElementById('put100').addEventListener('click', function () {
+        index = markers[index-1].marker.label
+        updateMarker(index-1, 100)
+        closeModal();
+    });
+    // 모달 다이얼로그에서 200 버튼 클릭 시
+    document.getElementById('put200').addEventListener('click', function () {
+        index = markers[index-1].marker.label
+        updateMarker(index-1, 200)
+        closeModal();
+    });
+    // 모달 다이얼로그에서 300 버튼 클릭 시
+    document.getElementById('put300').addEventListener('click', function () {
+        index = markers[index-1].marker.label
+        updateMarker(index-1, 300)
+        closeModal();
+    });
+    // 모달 다이얼로그에서 400 버튼 클릭 시
+    document.getElementById('put400').addEventListener('click', function () {
+        index = markers[index-1].marker.label
+        updateMarker(index-1, 400)
+        closeModal();
+    });
 }
 
 function closeModal() {
@@ -101,7 +137,8 @@ document.getElementById('saveButton').addEventListener('click', function () {
     const markerData = markers.map(item => ({
         lat: item.marker.getPosition().lat(),
         lng: item.marker.getPosition().lng(),
-        number: item.number
+        number: item.number,
+        customValue: item.customValue
     }));
 
     const jsonData = JSON.stringify(markerData);
@@ -115,23 +152,7 @@ document.getElementById('saveButton').addEventListener('click', function () {
     a.click();
 });
 
-// 마커 업데이트
-document.getElementById('updateButton').addEventListener('click', function () {
-    const currentMarkerIndex = parseInt(document.getElementById('currentMarkerIndex').value);
-    const newMarkerIndex = parseInt(document.getElementById('newMarkerIndex').value);
 
-    updateMarker(currentMarkerIndex - 1, newMarkerIndex); // 인덱스를 0부터 시작하므로 1을 빼줍니다.
-    closeModal();
-});
-
-// 모달 다이얼로그에서 추가 버튼 클릭 시
-document.getElementById('addMarkerButton').addEventListener('click', function () {
-    if (selectedMarker) {
-        const newIndex = markers.length;
-        addMarker(selectedMarker.getPosition(), newIndex + 1);
-    }
-    closeModal();
-});
 
 // 모달 다이얼로그에서 제거 버튼 클릭 시
 document.getElementById('removeMarkerButton').addEventListener('click', function () {
