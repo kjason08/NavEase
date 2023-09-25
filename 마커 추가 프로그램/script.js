@@ -41,6 +41,24 @@ function addMarker(location, number, cValue) {
     
 }
 
+function addPreviousMarker(location, number, cValue){
+    const marker = new google.maps.Marker({
+        position: location,
+        map: map,
+        label: number.toString(),
+        customValue: cValue
+    })
+
+    markers.push({ number, marker })
+
+    marker.addListener('click', function(){
+        selectedMarker = marker;
+        openModal(number);
+    });
+    
+}
+
+
 function removeMarker(markerToRemove) {
     // markers 배열에서 해당 마커 제거
     markers = markers.filter(item => item.marker !== markerToRemove);
@@ -107,15 +125,18 @@ function loadMarkersFromJSON(jsonData) {
     // 이전에 추가한 마커 삭제
     markers.forEach(item => item.marker.setMap(null));
     markers = [];
-
+    index = 1;
     // JSON 데이터 파싱
     const markerData = JSON.parse(jsonData);
 
     // 마커 추가
     markerData.forEach(data => {
         const location = { lat: data.lat, lng: data.lng };
-        addMarker(location, data.number);
+        addPreviousMarker(location, data.number, data.customValue);
+        index++;
     });
+
+    NUMBER = index;
 }
 
 document.getElementById('loadButton').addEventListener('click', function () {
