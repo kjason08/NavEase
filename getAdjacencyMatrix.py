@@ -6,7 +6,7 @@ import json
 #각 노드에 대한 위도, 경도 데이터를 markers.json 파일에서 가져오는 함수
 def getLocation():
     #markers.json 파일 열기
-    file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/markers.json"
+    file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/markers_SSG.json"
     with open(file_path, 'r') as file:
         data = json.load(file)
     
