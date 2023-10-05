@@ -7,7 +7,7 @@ def combineMarker():
         data_1 = json.load(file)
     
     #어은동, 궁동, 도룡동 마커
-    file_path_2 = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/Markers/markers_Bongmyeong.json"
+    file_path_2 = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/Markers/markers_EGD.json"
     with open(file_path_2, 'r') as file:
         data_2 = json.load(file)
     
