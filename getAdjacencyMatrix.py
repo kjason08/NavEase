@@ -30,7 +30,7 @@ isAdjacent_SSG = [[0,1,1,0,0,0,0,0,0,0,0,0],[1,0,0,1,1,1,1,0,0,0,0,0],[1,0,0,0,0
                   [0,0,0,0,0,0,0,0,1,0,1,0],[0,0,0,0,0,0,0,0,0,1,0,1],[0,0,0,0,0,0,1,0,0,0,1,0]]
 
 #모빌리티 인덱스
-mobilityIndex = [0,300,0,300,300,300,0,0,0,0,0,0]
+mobility_Index = [0,10001,0,10001,10001,10001,0,0,0,0,0,0]
 
 #모빌리티 인덱스에 따른 속력
 v_walk = 5
@@ -49,6 +49,14 @@ def getDistance(lat1, lon1, lat2, lon2):
     distance = 2 * R * math.asin(math.sqrt(havLat + math.cos(lat1) * math.cos(lat2) * havLon))
     return distance
 
+#위도, 경도 기반 거리 계산: 맨하튼 거리
+def getManhattan(lat1, lon1, lat2, lon2):
+    d1 = getDistance(lat1, lon1, lat2, lon1)
+    d2 = getDistance(lat2, lon1, lat2, lon2)
+
+    return d1 + d2
+
+
 #Weighted directed adjacency matrix 생성
 def getWDAdjacency(location, isAdjacency):
     A = []
@@ -61,9 +69,9 @@ def getWDAdjacency(location, isAdjacency):
                 distance = getDistance(location[indexI][0], location[indexI][1], 
                                                 location[indexJ][0], location[indexJ][1])
                 # distance -> time
-                if mobilityIndex[indexI]//100 == 0:
+                if mobility_Index[indexI]//100 == 0:
                     takingTime = distance/v_walk
-                elif mobilityIndex[indexI]//100 == 3:
+                elif mobility_Index[indexI]//100 == 3:
                     takingTime = distance/v_bus
                 else:
                     takingTime = distance/v_bike
@@ -84,6 +92,102 @@ def heuristic(node, goal):
     for n in node:
         H.append(getDistance(n[0], n[1], goalNode[0], goalNode[1])/v_walk)
     return H
+
+#Heuristic 값: 맨해튼 거리에 대한 도보 속력
+def getHeuristic(node, current, goal):
+    currentNode = node[current]
+    goalNode = node[goal]
+    lat1 = currentNode['lat']
+    lon1 = currentNode['lng']
+    lat2 = goalNode['lat']
+    lon2 = goalNode['lng']
+
+    #맨해튼 거리 계산
+    h = getManhattan(lat1, lon1, lat2, lon2)
+
+    return h
+
+#G 값: 노드 간 비용 (이동 불편도)
+#변수 설명: 노드 구조 list, 인접 행렬, 부모 노드 인덱스, 인접 노드 인덱스, 모빌리티 인덱스 구분자 (1~10000)
+def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
+    #인접한 노드
+    adjacentNode = node[adjacent]
+    #현재 노드
+    parentNode = node[parent]
+
+    #인접 여부 확인
+    adjacencyVector = AMatrix[node.index(parentNode)]
+    adjacency = adjacencyVector[node.index(adjacentNode)]
+    if adjacency == math.inf:
+        return math.inf
+    else:
+        #노드 사이 거리 계산
+        adjacentLocation = [adjacentNode['lat'], adjacentNode['lng']]
+        parentLocation = [parentNode['lat'], parentNode['lng']]
+        distance = getManhattan(adjacentLocation[0], adjacentLocation[1], parentLocation[0], parentLocation[1])
+
+        #이용 가능한 교통 자원
+        adjacentM = adjacentNode['customValue']
+        parentM = parentNode['customValue']
+        if mobility_index_delimiter == 10000:
+            Q_walk_parent = parentM//mobility_index_delimiter
+            Q_walk_adjacent = adjacentM//mobility_index_delimiter
+            if Q_walk_parent == 1:
+                #인접 노드로 걸어서 이동할 수 있는지 확인
+                if Q_walk_adjacent == 1:
+                    passingTime = distance/v_walk
+                else:
+                    passingTime = math.inf
+            else:
+                passingTime = math.inf
+        elif mobility_index_delimiter == 1000:
+            Q_tashu = (parentM%10000)//mobility_index_delimiter
+            if Q_tashu == 1:
+                #인접 노드도 타슈(자전거)로 이용 가능한 지 확인
+                if ((parentM%10000)%1000)//100 == 1 and ((adjacentM%10000)%1000)//100 == 1:
+                    passingTime = distance/v_bike
+                else:
+                    passingTime = math.inf
+            else:
+                passingTime = math.inf
+        elif mobility_index_delimiter == 100:
+            Q_bicycle_parent = ((parentM%10000)%1000)//mobility_index_delimiter
+            Q_bicycle_adjacent = ((adjacentM%10000)%1000)//mobility_index_delimiter
+            if Q_bicycle_parent == 1:
+                #인접 노드로 자전거를 타고 이동할 수 있는지 확인
+                if Q_bicycle_adjacent == 1:
+                    passingTime = distance/v_bike
+                else:
+                    passingTime = math.inf
+            else:
+                passingTime = math.inf
+        elif mobility_index_delimiter == 10:
+            Q_subway_parent = (((parentM%10000)%1000)%100)//mobility_index_delimiter
+            Q_subway_adjacent = (((adjacentM%10000)%1000)%100)//mobility_index_delimiter
+            if Q_subway_parent == 1:
+                #인접 노드로 지하철을 타고 이동할 수 있는지 확인
+                if Q_subway_adjacent == 1:
+                    passingTime = distance/v_subway
+                else:
+                    passingTime = math.inf
+            else:
+                passingTime = math.inf
+        elif mobility_index_delimiter == 1:
+            R_bus_parent = (((parentM%10000)%1000)%100)%10
+            R_bus_adjacent = (((adjacentM%10000)%1000)%100)%10
+            if R_bus_parent > 0:
+                #인접 노드로 버스를 타고 이동할 수 있는지 확인
+                if R_bus_adjacent > 0:
+                    #버스 노선이 일치하는지 확인
+                    passingTime = distance/v_bus
+                else:
+                    passingTime = math.inf
+
+
+#R_bus로부터 다니는 버스 노선 얻기
+def getBusLine():
+    print(len("1.0001"))
+
 
 #open list, closed list에 들어갈 노드 구조체 생성
 def nodeStructure(adMatrix, heuristic, currentIndex, parentIndex, parentStructure):
@@ -166,7 +270,8 @@ def aStar(node, isAdjacency, start, end):
     #closedList와 closedIndexList 반환
     return [closedList, closedIndexList]
 
-print(aStar(data_SSG, isAdjacent_SSG, 0, 7)[1])
+#print(aStar(data_SSG, isAdjacent_SSG, 0, 7)[1])
+getBusLine()
 
 
 

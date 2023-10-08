@@ -1,6 +1,6 @@
 let map;
 let markers = [];
-let NUMBER = 1;
+let NUMBER = 0;
 
 function initMap() {
     // 지도 초기화 및 중앙 위치 설정
