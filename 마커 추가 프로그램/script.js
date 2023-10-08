@@ -81,35 +81,24 @@ function updateMarker(index, cValue) {
 function openModal(index) {
     const modal = document.getElementById('modal');
     modal.style.display = 'block';
+    
+    //Okay 버튼 클릭 시
+    document.getElementById('okay').addEventListener('click', function () {
+        //체크박스에서 체크된 것 가져오기
+        const query = 'input[name="Mobility"]:checked';
+        const selectedEls = 
+            document.querySelectorAll(query);
 
-    // 모달 다이얼로그에서 0 버튼 클릭 시
-    document.getElementById('put0').addEventListener('click', function () {
+        //value 가져오기: 체크된 값 모두 더하기
+        let mobilityIndex = 0;
+        selectedEls.forEach((el) => {
+            mobilityIndex += Number(el.value);
+        });
+
+        //마커 인덱스
         index = markers[index-1].marker.label
-        updateMarker(index-1, 0)
-        closeModal();
-    });
-    // 모달 다이얼로그에서 100 버튼 클릭 시
-    document.getElementById('put100').addEventListener('click', function () {
-        index = markers[index-1].marker.label
-        updateMarker(index-1, 100)
-        closeModal();
-    });
-    // 모달 다이얼로그에서 200 버튼 클릭 시
-    document.getElementById('put200').addEventListener('click', function () {
-        index = markers[index-1].marker.label
-        updateMarker(index-1, 200)
-        closeModal();
-    });
-    // 모달 다이얼로그에서 300 버튼 클릭 시
-    document.getElementById('put300').addEventListener('click', function () {
-        index = markers[index-1].marker.label
-        updateMarker(index-1, 300)
-        closeModal();
-    });
-    // 모달 다이얼로그에서 400 버튼 클릭 시
-    document.getElementById('put400').addEventListener('click', function () {
-        index = markers[index-1].marker.label
-        updateMarker(index-1, 400)
+        updateMarker(index-1, mobilityIndex)
+        //닫기
         closeModal();
     });
 }
