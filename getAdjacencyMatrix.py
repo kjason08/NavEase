@@ -2,32 +2,16 @@ import numpy as np
 import math
 import json
 
-#카이스트~신세계 백화점까지의 노드 데이터
-#각 노드에 대한 위도, 경도 데이터를 markers.json 파일에서 가져오는 함수
-def getLocation():
-    #markers.json 파일 열기
-    file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/markers_SSG.json"
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-    
-    #각 노드의 dictionary를 list로 변환
-    location = []
-    nodeLocation = []
-    for i in data:
-        nodeLocation = [i['lat'],i['lng']]
-        location.insert(i['number']-1,nodeLocation)
-        nodeLocation = []
-    return location
-
-data_SSG = getLocation()
-
-arr_SSG = np.array(data_SSG)
+#테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 2, 1, 3, 4, 5, 6, 7]
+file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/markers_SSG.json"
+with open(file_path, 'r') as file:
+    data_SSG = json.load(file)
 
 #인접 여부 데이터
-isAdjacent_SSG = [[0,1,1,0,0,0,0,0,0,0,0,0],[1,0,0,1,1,1,1,0,0,0,0,0],[1,0,0,0,0,0,0,0,1,0,0,0],
-                  [0,1,0,0,1,0,0,0,0,0,0,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,0,0,0],
-                  [0,0,0,0,0,1,0,1,0,0,0,1],[0,0,0,0,0,0,1,0,0,0,0,1],[0,0,1,0,0,0,0,0,0,1,0,0],
-                  [0,0,0,0,0,0,0,0,1,0,1,0],[0,0,0,0,0,0,0,0,0,1,0,1],[0,0,0,0,0,0,1,0,0,0,1,0]]
+AMatrix_SSG = [[0,1,1,0,0,0,0,0,0,0,0,0],[1,0,0,1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,1,0,0,0],
+                  [0,1,1,0,1,0,0,0,0,0,0,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,0,0,1],
+                  [0,0,0,0,0,1,0,1,0,0,0,1],[0,0,0,0,0,0,1,0,0,0,0,0],[0,0,1,0,0,0,0,0,0,1,0,0],
+                  [0,0,0,0,0,0,0,0,1,0,1,0],[0,0,0,0,0,0,0,0,0,1,0,1],[0,0,0,0,0,1,1,0,0,0,1,0]]
 
 #모빌리티 인덱스
 mobility_Index = [0,10001,0,10001,10001,10001,0,0,0,0,0,0]
@@ -50,50 +34,7 @@ def getDistance(lat1, lon1, lat2, lon2):
     distance = 2 * R * math.asin(math.sqrt(havLat + math.cos(lat1) * math.cos(lat2) * havLon))
     return distance
 
-#위도, 경도 기반 거리 계산: 맨하튼 거리
-def getManhattan(lat1, lon1, lat2, lon2):
-    d1 = getDistance(lat1, lon1, lat2, lon1)
-    d2 = getDistance(lat2, lon1, lat2, lon2)
-
-    return d1 + d2
-
-#Weighted directed adjacency matrix 생성
-def getWDAdjacency(location, isAdjacency):
-    A = []
-    indexI = 0
-    for n in isAdjacency:
-        indexJ = 0
-        adjacencyRow = []
-        for adjacency in n:
-            if adjacency == 1:
-                distance = getDistance(location[indexI][0], location[indexI][1], 
-                                                location[indexJ][0], location[indexJ][1])
-                # distance -> time
-                if mobility_Index[indexI]//100 == 0:
-                    takingTime = distance/v_walk
-                elif mobility_Index[indexI]//100 == 3:
-                    takingTime = distance/v_bus
-                else:
-                    takingTime = distance/v_bike
-               #adjacencyRow.append(getDistance(location[indexI][0], location[indexI][1], 
-                                                #location[indexJ][0], location[indexJ][1]))
-                adjacencyRow.append(takingTime)
-            else:
-                adjacencyRow.append(math.inf)
-            indexJ += 1
-        A.append(adjacencyRow)
-        indexI += 1
-    return A
-
-#Heuristic matrix 생성: 직선거리에 대한 도보 속력
-def heuristic(node, goal):
-    goalNode = node[goal]
-    H = []
-    for n in node:
-        H.append(getDistance(n[0], n[1], goalNode[0], goalNode[1])/v_walk)
-    return H
-
-#Heuristic 값: 맨해튼 거리에 대한 도보 속력
+#Heuristic 값: 직선 거리에 대한 도보 속력
 def getHeuristic(node, current, goal):
     currentNode = node[current]
     goalNode = node[goal]
@@ -102,8 +43,8 @@ def getHeuristic(node, current, goal):
     lat2 = goalNode['lat']
     lon2 = goalNode['lng']
 
-    #맨해튼 거리 계산
-    h = getManhattan(lat1, lon1, lat2, lon2)
+    #직선 거리 계산
+    h = getDistance(lat1, lon1, lat2, lon2)
 
     return h
 
@@ -116,19 +57,21 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
     parentNode = node[parent]
 
     #인접 여부 확인
-    adjacencyVector = AMatrix[node.index(parentNode)]
-    adjacency = adjacencyVector[node.index(adjacentNode)]
-    if adjacency == math.inf:
+    adjacencyVector = AMatrix[parent]
+    adjacency = adjacencyVector[adjacent]
+    if adjacency == 0:
         return math.inf
     else:
         #노드 사이 거리 계산
         adjacentLocation = [adjacentNode['lat'], adjacentNode['lng']]
         parentLocation = [parentNode['lat'], parentNode['lng']]
-        distance = getManhattan(adjacentLocation[0], adjacentLocation[1], parentLocation[0], parentLocation[1])
+        distance = getDistance(adjacentLocation[0], adjacentLocation[1], parentLocation[0], parentLocation[1])
 
         #이용 가능한 교통 자원
         adjacentM = adjacentNode['customValue']
         parentM = parentNode['customValue']
+        #이동 소요 시간
+        passingTime = math.inf
         if mobility_index_delimiter == 10000:
             Q_walk_parent = parentM//mobility_index_delimiter
             Q_walk_adjacent = adjacentM//mobility_index_delimiter
@@ -198,8 +141,8 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
 
 #R_bus로부터 다니는 버스 노선 얻기
 def getBusLine(R_bus):
-    numberBusLine = len(R_bus) - 2
     lineData_str = str(R_bus)
+    numberBusLine = len(lineData_str) - 2
     lineData = []
     for i in range(1, numberBusLine):
         if lineData_str[i + 1] == 1:
@@ -215,19 +158,25 @@ def getCommmonBusLine(R_bus_1, R_bus_2):
     
     return list(intersection)
 
-#open list, closed list에 들어갈 노드 구조체 생성
-def nodeStructure(adMatrix, heuristic, currentIndex, parentIndex, parentStructure):
-    structure = dict()
-    structure['G'] = adMatrix[parentIndex][currentIndex] + parentStructure['G']
-    structure['H'] = heuristic[currentIndex]
-    structure['F'] = structure['G'] + structure['H']
-    structure['ParentNode'] = parentIndex
-    return structure
+#open list, closed list에 들어갈 노드 구조체 리스트 생성
+def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentStructure):
+    structureList = []
+    for i in delimiters:
+        structure = dict()
+        structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i) + parentStructure['G']
+        structure['H'] = getHeuristic(node, adjacentIndex, goalIndex)
+        structure['F'] = structure['G'] + structure['H']
+        structure['id'] = adjacentIndex
+        if structure['F'] != math.inf:
+            structure['ParentNode'] = parentIndex
+            structureList.append(structure)
+
+    return structureList
 
 # A* 알고리즘
-def aStar(node, isAdjacency, start, end):
-    # Weighted directed adjacency matrix 생성
-    graph = getWDAdjacency(node, isAdjacency)
+def aStar(node, AMatrix, start, end):
+    #반복 횟수
+    iter = 0
 
     #openList, closedList 초기화
     openList = []
@@ -235,39 +184,47 @@ def aStar(node, isAdjacency, start, end):
     openIndexList = []
     closedIndexList = []
 
-    #Heuristic matrix 생성
-    H = heuristic(node, end)
-
     # closedList에 시작 노드 추가
-    startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0}
+    startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start}
     closedList.append(startStructure)
     closedIndexList.append(start)
 
     # 현재 노드 초기화
-    currentNode = graph[start]
+    currentNode = node[start]
     currentIndex = start
+    #현재 노드에서의 인접 벡터 초기화
+    currentVector = AMatrix[currentIndex]
     #부모 노드 초기화
     parentStructure = startStructure
 
     # closedList에 end Node가 들어갈 때까지 실행
     while {'state' : 'finished'} not in closedList:
         #openList에 인접한 노드 추가: 인접해있으면서 closedList에 있지 않아야 한다
-        for w in currentNode:
-            adjacentIndex = currentNode.index(w)
-            if w != math.inf and adjacentIndex not in closedIndexList:
-                newStructure = nodeStructure(graph, H, adjacentIndex, currentIndex, parentStructure)
-                #기존에 있는 값보다 작은 F값을 가지는 경우 대체
+        for w in range(1,len(currentVector)):
+            adjacentIndex = w - 1
+            adjacency = currentVector[adjacentIndex]
+            if adjacency != 0 and adjacentIndex not in closedIndexList:
+                #인접한 노드에 대한 구조 리스트 생성
+                newStructureList = nodeStructure(node, AMatrix, end, adjacentIndex, currentIndex, parentStructure)
+                #newStructureList에서 가장 작은 F값을 갖는 구조체 찾기 
+                fList = []
+                for s in newStructureList:
+                    fList.append(s['F'])
+                minF = min(fList)
+                minIndex = fList.index(minF)
+                newStructure = newStructureList[minIndex]
+                #인접한 노드가 openList의 기존에 있는 값보다 작은 F값을 가지는 경우 대체
                 if adjacentIndex in openIndexList:
                     originalIndex = openIndexList.index(adjacentIndex)
-                    if newStructure['F'] < openList[originalIndex]['F']:
-                        openList.remove(openList[originalIndex])
+                    originalNode = openList[originalIndex] 
+                    if newStructure['F'] < originalNode['F']:
+                        openList.remove(originalNode)
                         openIndexList.remove(originalIndex)
                         openList.append(newStructure)
                         openIndexList.append(adjacentIndex)
                 else:
                     openList.append(newStructure)
                     openIndexList.append(adjacentIndex)
-
         #openList에서 가장 작은 F값을 가지는 노드를 closedList에 추가
         #초기 값
         minFValue = math.inf
@@ -275,30 +232,100 @@ def aStar(node, isAdjacency, start, end):
         for n in openList:
             if n['F'] < minFValue:
                 minFValue = n['F']
-        #최소 F값을 가지는 노드 추가
+        #최소 F값을 가지는 노드 closedList에 추가
         for n in openList:
             if n['F'] == minFValue:
                 closedList.append(n)
-                closedIndexList.append(openIndexList[openList.index(n)])
+                #최소 F값을 가지는 노드의 id
+                minimalIndex = n['id']
+                closedIndexList.append(minimalIndex)
                 #현재 노드 설정
-                currentNode = graph[openIndexList[openList.index(n)]]
-                currentIndex = openIndexList[openList.index(n)]
+                currentNode = node[minimalIndex]
+                currentIndex = minimalIndex
+                #현재 인접 벡터 설정
+                currentVector = AMatrix[currentIndex]
                 #부모 노드 설정
                 parentStructure = n
                 #openList에 있던 것 제거
-                openIndexList.remove(openIndexList[openList.index(n)])
+                openIndexList.remove(currentIndex)
                 openList.remove(n)
                 #End Node가 추가되었을 때 closedList에 {'state' : 'finished'} 추가
-                if n['H'] == 0:
+                if currentIndex == end:
                     closedList.append({'state' : 'finished'})
                 break
+        iter += 1
+        if iter > 10000:
+            print("경로를 찾는 데 시간이 너무 많이 듭니다.")
+            print(closedIndexList)
+            print(closedList)
+            break
 
     #closedList와 closedIndexList 반환
     return [closedList, closedIndexList]
 
-#print(aStar(data_SSG, isAdjacent_SSG, 0, 7)[1])
+#최단 경로를 표출
+def describeShortestPath(node, AMatrix, start, end):
+    closedListList = aStar(node, AMatrix, start, end)
+    closedList = closedListList[0]
+    closedList.remove({'state' : 'finished'})
+    closedIndexList = closedListList[1]
 
+    shortestPath = []
+    shortestPathId = []
+    #서로 다른 경로 세트를 담을 dictionary
+    fSet = dict()
+    i = 0
+    parent = math.inf
 
+    #Parent Node에 따라 경로 분류
+    for n in closedList:
+        if n['id'] == start:
+            shortestPath.append(n)
+            shortestPathId.append(start)
+            parent = start
+        else:
+            if n['ParentNode'] == parent:
+                shortestPath.append(n)
+                shortestPathId.append(n['id'])
+                fSet[str(i)] = n['F']
+                fSet[str(i) + 'Path'] = shortestPath
+                fSet[str(i) + 'Id'] = shortestPathId
+                parent = n['id']
+            else:
+                i += 1
+                shortestPath = []
+                shortestPathId = []
+                parent = n['ParentNode']
+                parentNode = {'id' : parent}
+                #이전 path를 역추적
+                while parentNode['id'] != start:
+                    for c in closedList:
+                        if c['id'] == parent:
+                            parentNode = c
+                            shortestPath.append(parentNode)
+                            shortestPathId.append(parent)
+                            parent = parentNode['ParentNode']
+                    shortestPath.append(parentNode)
+                    shortestPathId.append(parent)
+                shortestPath.append(closedList[0])
+                shortestPathId.append(closedList[0]['id'])
+                shortestPath.reverse()
+                shortestPathId.reverse()
+                shortestPath.append(n)
+                shortestPathId.append(n['id'])
+                fSet[str(i)] = n['F']
+                fSet[str(i) + 'Path'] = shortestPath
+                fSet[str(i) + 'Id'] = shortestPathId
+                parent = n['id']
+    #가장 작은 F값을 가지는 경로 호출
+    minPathValue = math.inf
+    for k in range(0, i + 1):
+        keyI = str(k)
+        if fSet[keyI] < minPathValue:
+            minPathValue = fSet[keyI]
+    for k in range(0, i + 1):
+        if fSet[keyI] == minPathValue:
+            return [fSet[keyI + 'Path'], fSet[keyI + 'Id']]
 
-
-            
+print(aStar(data_SSG, AMatrix_SSG, 0, 7)[0])
+print(describeShortestPath(data_SSG, AMatrix_SSG, 0, 7)[1])
