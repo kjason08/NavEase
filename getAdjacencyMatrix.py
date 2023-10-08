@@ -31,6 +31,7 @@ isAdjacent_SSG = [[0,1,1,0,0,0,0,0,0,0,0,0],[1,0,0,1,1,1,1,0,0,0,0,0],[1,0,0,0,0
 
 #모빌리티 인덱스
 mobility_Index = [0,10001,0,10001,10001,10001,0,0,0,0,0,0]
+delimiters = [10000, 1000, 100, 10, 1]
 
 #모빌리티 인덱스에 따른 속력
 v_walk = 5
@@ -55,7 +56,6 @@ def getManhattan(lat1, lon1, lat2, lon2):
     d2 = getDistance(lat2, lon1, lat2, lon2)
 
     return d1 + d2
-
 
 #Weighted directed adjacency matrix 생성
 def getWDAdjacency(location, isAdjacency):
@@ -179,15 +179,41 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
                 #인접 노드로 버스를 타고 이동할 수 있는지 확인
                 if R_bus_adjacent > 0:
                     #버스 노선이 일치하는지 확인
-                    passingTime = distance/v_bus
+                    if len(getCommmonBusLine(R_bus_parent, R_bus_adjacent)) > 0:
+                        #노선마다 대기 시간 비교 필요
+                        passingTime = distance/v_bus
+                    else:
+                        passingTime = math.inf
                 else:
                     passingTime = math.inf
+        else:
+            #잘못된 mobility_index_delimeter
+            print("Wrong mobility index delimeter is put")
+            passingTime = math.inf
+    
+    #혼잡도, 비용 등 적용 필요
+    g = passingTime
 
+    return g
 
 #R_bus로부터 다니는 버스 노선 얻기
-def getBusLine():
-    print(len("1.0001"))
+def getBusLine(R_bus):
+    numberBusLine = len(R_bus) - 2
+    lineData_str = str(R_bus)
+    lineData = []
+    for i in range(1, numberBusLine):
+        if lineData_str[i + 1] == 1:
+            lineData.append(i)
+    return lineData
 
+#두 노드를 지나는 버스 노선이 있는지 확인
+def getCommmonBusLine(R_bus_1, R_bus_2):
+    lineData_1 = getBusLine(R_bus_1)
+    lineData_2 = getBusLine(R_bus_2)
+    #교집합 확인
+    intersection = set(lineData_1) & set(lineData_2)
+    
+    return list(intersection)
 
 #open list, closed list에 들어갈 노드 구조체 생성
 def nodeStructure(adMatrix, heuristic, currentIndex, parentIndex, parentStructure):
@@ -271,7 +297,6 @@ def aStar(node, isAdjacency, start, end):
     return [closedList, closedIndexList]
 
 #print(aStar(data_SSG, isAdjacent_SSG, 0, 7)[1])
-getBusLine()
 
 
 
