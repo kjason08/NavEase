@@ -102,7 +102,7 @@ document.getElementById('okay').addEventListener('click', function () {
         mobilityIndex += Number(el.value);
     });
     
-    updateMarker(NUMBER-2, mobilityIndex)
+    updateMarker(NUMBER-1, mobilityIndex)
     //닫기
     closeModal();
 });
