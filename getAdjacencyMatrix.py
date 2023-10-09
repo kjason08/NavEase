@@ -2,7 +2,7 @@ import numpy as np
 import math
 import json
 
-#테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 2, 1, 3, 4, 5, 6, 7]
+#테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 1, 3, 4, 5, 6, 7]
 file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/markers_SSG.json"
 with open(file_path, 'r') as file:
     data_SSG = json.load(file)
@@ -22,6 +22,7 @@ v_walk = 5
 v_bike = 15
 v_bus = 20
 v_subway = 100
+v_Set = [v_walk, v_bike, v_bike, v_bus, v_subway]
 
 #위도, 경도 기반 거리 계산: 하버사인 공식
 def getDistance(lat1, lon1, lat2, lon2):
@@ -32,9 +33,23 @@ def getDistance(lat1, lon1, lat2, lon2):
     #지구 반지름(km)
     R = 6371
     distance = 2 * R * math.asin(math.sqrt(havLat + math.cos(lat1) * math.cos(lat2) * havLon))
+
     return distance
 
-#Heuristic 값: 직선 거리에 대한 도보 속력
+#Mobility index로부터 이용 가능한 교통 자원 파악
+def mToAvailability(mobilityIndex):
+    result = []
+    for i in range(0,5):
+        result.append(mobilityIndex)
+    result[0] = result[0]//10000
+    result[1] = (result[1]%10000)//1000
+    result[2] = ((result[2]%10000)%1000)//100
+    result[3] = (((result[3]%10000)%1000)%100)//10
+    result[4] = (((result[4]%10000)%1000)%100)%10
+
+    return result
+
+#Heuristic 값: 현재 위치에서 목적지까지의 직선 거리 상을, 접근 가능한 가장 빠른 교통 자원으로 이동하는 시간
 def getHeuristic(node, current, goal):
     currentNode = node[current]
     goalNode = node[goal]
@@ -44,9 +59,20 @@ def getHeuristic(node, current, goal):
     lon2 = goalNode['lng']
 
     #직선 거리 계산
-    h = getDistance(lat1, lon1, lat2, lon2)
+    distance = getDistance(lat1, lon1, lat2, lon2)
 
-    return h
+    #이용 가능한 교통 자원 파악
+    mobilityIndex = currentNode['customValue']
+    mobilityAvailable = mToAvailability(mobilityIndex)
+    v = 0
+    for i in mobilityAvailable:
+        if i > 0:
+            index = mobilityAvailable.index(i)
+            V = v_Set[index]
+            if V > v:
+                v = V
+
+    return distance/v
 
 #G 값: 노드 간 비용 (이동 불편도)
 #변수 설명: 노드 구조 list, 인접 행렬, 부모 노드 인덱스, 인접 노드 인덱스, 모빌리티 인덱스 구분자 (1~10000)
@@ -200,7 +226,7 @@ def aStar(node, AMatrix, start, end):
     # closedList에 end Node가 들어갈 때까지 실행
     while {'state' : 'finished'} not in closedList:
         #openList에 인접한 노드 추가: 인접해있으면서 closedList에 있지 않아야 한다
-        for w in range(1,len(currentVector)):
+        for w in range(1,len(currentVector) + 1):
             adjacentIndex = w - 1
             adjacency = currentVector[adjacentIndex]
             if adjacency != 0 and adjacentIndex not in closedIndexList:
@@ -268,64 +294,64 @@ def describeShortestPath(node, AMatrix, start, end):
     closedListList = aStar(node, AMatrix, start, end)
     closedList = closedListList[0]
     closedList.remove({'state' : 'finished'})
-    closedIndexList = closedListList[1]
 
     shortestPath = []
     shortestPathId = []
+    startNode = closedList[0]
+    startNodeId = startNode['id']
+    closedList.remove(startNode)
     #서로 다른 경로 세트를 담을 dictionary
     fSet = dict()
     i = 0
-    parent = math.inf
+    parent = start
 
     #Parent Node에 따라 경로 분류
     for n in closedList:
-        if n['id'] == start:
+        if n['ParentNode'] == parent:
             shortestPath.append(n)
-            shortestPathId.append(start)
-            parent = start
+            shortestPathId.append(n['id'])
+            fSet[str(i)] = n['H']
+            fSet[str(i) + 'Path'] = shortestPath
+            fSet[str(i) + 'Id'] = shortestPathId
+            parent = n['id']
         else:
-            if n['ParentNode'] == parent:
-                shortestPath.append(n)
-                shortestPathId.append(n['id'])
-                fSet[str(i)] = n['F']
-                fSet[str(i) + 'Path'] = shortestPath
-                fSet[str(i) + 'Id'] = shortestPathId
-                parent = n['id']
-            else:
-                i += 1
-                shortestPath = []
-                shortestPathId = []
-                parent = n['ParentNode']
-                parentNode = {'id' : parent}
-                #이전 path를 역추적
-                while parentNode['id'] != start:
-                    for c in closedList:
-                        if c['id'] == parent:
-                            parentNode = c
-                            shortestPath.append(parentNode)
-                            shortestPathId.append(parent)
-                            parent = parentNode['ParentNode']
-                    shortestPath.append(parentNode)
-                    shortestPathId.append(parent)
-                shortestPath.append(closedList[0])
-                shortestPathId.append(closedList[0]['id'])
-                shortestPath.reverse()
-                shortestPathId.reverse()
-                shortestPath.append(n)
-                shortestPathId.append(n['id'])
-                fSet[str(i)] = n['F']
-                fSet[str(i) + 'Path'] = shortestPath
-                fSet[str(i) + 'Id'] = shortestPathId
-                parent = n['id']
-    #가장 작은 F값을 가지는 경로 호출
+            i += 1
+            shortestPath = []
+            shortestPathId = []
+            parent = n['ParentNode']
+            parentNode = {'id' : parent}
+            #이전 path를 역추적
+            while parent != start:
+                for c in closedList:
+                    if c['id'] == parent:
+                        shortestPath.append(c)
+                        shortestPathId.append(c['id'])
+                        parentNode = c
+                        parent = parentNode['ParentNode']
+                        break
+            shortestPath.reverse()
+            shortestPathId.reverse()
+            #역추적 완료 후 추가
+            shortestPath.append(n)
+            shortestPathId.append(n['id'])
+            fSet[str(i)] = n['H']
+            fSet[str(i) + 'Path'] = shortestPath
+            fSet[str(i) + 'Id'] = shortestPathId
+            parent = n['id']
+
+    #가장 작은 H값을 가지는 '하나의' 경로 호출
     minPathValue = math.inf
+    result = ["Not found", "Not found"]
     for k in range(0, i + 1):
         keyI = str(k)
         if fSet[keyI] < minPathValue:
             minPathValue = fSet[keyI]
     for k in range(0, i + 1):
+        keyI = str(k)
         if fSet[keyI] == minPathValue:
-            return [fSet[keyI + 'Path'], fSet[keyI + 'Id']]
+            result = [[startNode] + fSet[keyI + 'Path'], [startNodeId] + fSet[keyI + 'Id']]
+    
+    return result
 
 print(aStar(data_SSG, AMatrix_SSG, 0, 7)[0])
 print(describeShortestPath(data_SSG, AMatrix_SSG, 0, 7)[1])
