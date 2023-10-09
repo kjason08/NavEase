@@ -89,6 +89,19 @@ function closeModal() {
     modal.style.display = 'none';
 }
 
+//버스 노선 체크 박스 상태에 따라 보이고 안 보이도록 하기
+function displayInput() {
+    //체크 박스 찾기
+    const checkbox = document.getElementById('bus_check');
+
+    //checked 값에 따라 display 다르게 하기
+    if (checkbox.checked) {
+        document.getElementsById('bus_line').style.visibility ='visible';
+    } else {
+        document.getElementsById('bus_line').style.visibility ='hidden';
+
+    }
+}
 
 //Okay 버튼 클릭 시
 document.getElementById('okay').addEventListener('click', function () {
@@ -96,11 +109,21 @@ document.getElementById('okay').addEventListener('click', function () {
     const query = 'input[name="Mobility"]:checked';
     const selectedEls = 
         document.querySelectorAll(query);
+    
     //value 가져오기: 체크된 값 모두 더하기
     let mobilityIndex = 0;
     selectedEls.forEach((el) => {
         mobilityIndex += Number(el.value);
     });
+
+    //입력창에 입력된 값 가져오기
+    let lines = document.getElementById('bus_line').value;
+    let lines_str = String(lines);
+    const numLines = lines_str.length;
+    lines = lines*(10**-numLines);
+
+    //최종 모빌리티 인덱스
+    mobilityIndex += lines;
     
     updateMarker(NUMBER-1, mobilityIndex)
     //닫기
