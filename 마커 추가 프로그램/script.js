@@ -29,13 +29,14 @@ function addMarker(location, number, cValue) {
 
     // 마커를 markers 배열에 추가
     markers.push({ number, marker });
+   
 
-    openModal(number);
+    openModal();
 
     // 클릭 이벤트 리스너 추가
     marker.addListener('click', function () {
         selectedMarker = marker;
-        openModal(number);
+        openModal();
     });
 
     
@@ -50,10 +51,11 @@ function addPreviousMarker(location, number, cValue){
     })
 
     markers.push({ number, marker })
+    NUMBER = markers.length
 
     marker.addListener('click', function(){
         selectedMarker = marker;
-        openModal(number);
+        openModal();
     });
     
 }
@@ -72,35 +74,14 @@ function updateMarker(index, cValue) {
     if (index >= 0 && index < markers.length) {
         const markerInfo = markers[index];
         markerInfo.customValue = cValue;
-        console.log(markers)
     } else {
         alert('Invalid marker index');  
     }
 }
 
-function openModal(index) {
+function openModal() {
     const modal = document.getElementById('modal');
     modal.style.display = 'block';
-    
-    //Okay 버튼 클릭 시
-    document.getElementById('okay').addEventListener('click', function () {
-        //체크박스에서 체크된 것 가져오기
-        const query = 'input[name="Mobility"]:checked';
-        const selectedEls = 
-            document.querySelectorAll(query);
-
-        //value 가져오기: 체크된 값 모두 더하기
-        let mobilityIndex = 0;
-        selectedEls.forEach((el) => {
-            mobilityIndex += Number(el.value);
-        });
-
-        //마커 인덱스
-        index = markers[index-1].marker.label
-        updateMarker(index-1, mobilityIndex)
-        //닫기
-        closeModal();
-    });
 }
 
 function closeModal() {
@@ -108,6 +89,23 @@ function closeModal() {
     modal.style.display = 'none';
 }
 
+
+//Okay 버튼 클릭 시
+document.getElementById('okay').addEventListener('click', function () {
+    //체크박스에서 체크된 것 가져오기
+    const query = 'input[name="Mobility"]:checked';
+    const selectedEls = 
+        document.querySelectorAll(query);
+    //value 가져오기: 체크된 값 모두 더하기
+    let mobilityIndex = 0;
+    selectedEls.forEach((el) => {
+        mobilityIndex += Number(el.value);
+    });
+    
+    updateMarker(NUMBER-2, mobilityIndex)
+    //닫기
+    closeModal();
+});
 
 
 function loadMarkersFromJSON(jsonData) {
@@ -128,6 +126,7 @@ function loadMarkersFromJSON(jsonData) {
     NUMBER = index;
 }
 
+//마커 업로드
 document.getElementById('loadButton').addEventListener('click', function () {
     const fileInput = document.getElementById('fileInput');
     if (fileInput.files.length > 0) {
@@ -143,6 +142,7 @@ document.getElementById('loadButton').addEventListener('click', function () {
     }
 });
 
+//마커 저장
 document.getElementById('saveButton').addEventListener('click', function () {
     const markerData = markers.map(item => ({
         lat: item.marker.getPosition().lat(),
