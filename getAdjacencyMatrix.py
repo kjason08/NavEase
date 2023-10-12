@@ -1,4 +1,3 @@
-import numpy as np
 import math
 import json
 
@@ -7,6 +6,10 @@ file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/markers_
 with open(file_path, 'r') as file:
     data_SSG = json.load(file)
 
+#버스 노선
+bus_line_array = ["1", "3", "5", "11", "48", "101", "102", "104", "105", "106", "107", "108", "113", "114", "115", "116", "117", 
+"119", "121", "312", "604", "655", "704", "705", "706", "911", "912", "1002", "1*"]
+
 #인접 여부 데이터
 AMatrix_SSG = [[0,1,1,0,0,0,0,0,0,0,0,0],[1,0,0,1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,1,0,0,0],
                   [0,1,1,0,1,0,0,0,0,0,0,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,0,0,1],
@@ -14,7 +17,7 @@ AMatrix_SSG = [[0,1,1,0,0,0,0,0,0,0,0,0],[1,0,0,1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,
                   [0,0,0,0,0,0,0,0,1,0,1,0],[0,0,0,0,0,0,0,0,0,1,0,1],[0,0,0,0,0,1,1,0,0,0,1,0]]
 
 #모빌리티 인덱스
-mobility_Index = [0,10001,0,10001,10001,10001,0,0,0,0,0,0]
+mobility_Index = [0, 10001, 0, 10001, 10001, 10001, 0, 0, 0, 0 ,0, 0]
 delimiters = [10000, 1000, 100, 10, 1]
 
 #모빌리티 인덱스에 따른 속력
@@ -63,6 +66,7 @@ def getHeuristic(node, current, goal):
 
     #이용 가능한 교통 자원 파악
     mobilityIndex = currentNode['customValue']
+    mobilityIndex = int(mobilityIndex.split(".")[0])
     mobilityAvailable = mToAvailability(mobilityIndex)
     v = 0
     for i in mobilityAvailable:
@@ -94,8 +98,19 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
         distance = getDistance(adjacentLocation[0], adjacentLocation[1], parentLocation[0], parentLocation[1])
 
         #이용 가능한 교통 자원
+        #String
         adjacentM = adjacentNode['customValue']
         parentM = parentNode['customValue']
+        #Int
+        adjacentM_list = adjacentM.split('.')
+        parentM_list = parentM.split('.')
+        #소수점 앞 mobility index: 이용 가능한 교통 자원이 무엇인지 파악할 때 이용
+        adjacentM = int(adjacentM_list[0])
+        parentM = int(parentM_list[0])
+        #소수점 뒤 mobility index: 이용 가능한 버스 노선이 무엇인지 파악할 때 이용
+        R_bus_adjacent_str = adjacentM_list[1]
+        R_bus_parent_str =parentM_list[1]
+
         #이동 소요 시간
         passingTime = math.inf
         if mobility_index_delimiter == 10000:
@@ -148,7 +163,7 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
                 #인접 노드로 버스를 타고 이동할 수 있는지 확인
                 if R_bus_adjacent > 0:
                     #버스 노선이 일치하는지 확인
-                    if len(getCommmonBusLine(R_bus_parent, R_bus_adjacent)) > 0:
+                    if len(getCommmonBusLine(R_bus_parent_str, R_bus_adjacent_str)) > 0:
                         #노선마다 대기 시간 비교 필요
                         passingTime = distance/v_bus
                     else:
@@ -165,14 +180,14 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
 
     return g
 
-#R_bus로부터 다니는 버스 노선 얻기
+#R_bus_str으로부터 다니는 버스 노선 얻기
 def getBusLine(R_bus):
-    lineData_str = str(R_bus)
-    numberBusLine = len(lineData_str) - 2
+    numberBusLine = len(R_bus)
     lineData = []
-    for i in range(1, numberBusLine):
-        if lineData_str[i + 1] == 1:
-            lineData.append(i)
+    for i in range(0, numberBusLine):
+        if R_bus[i] == 1:
+            specific_line = bus_line_array[i]
+            lineData.append(specific_line)
     return lineData
 
 #두 노드를 지나는 버스 노선이 있는지 확인

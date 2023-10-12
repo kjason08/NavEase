@@ -2,6 +2,9 @@ let map;
 let markers = [];
 let NUMBER = 0;
 
+let bus_line_array = ["1", "3", "5", "11", "48", "101", "102", "104", "105", "106", "107", "108", "113", "114", "115", "116", "117", 
+"119", "121", "312", "604", "655", "704", "705", "706", "911", "912", "1002", "1*",]
+
 function initMap() {
     // 지도 초기화 및 중앙 위치 설정
     map = new google.maps.Map(document.getElementById('map'), {
@@ -119,11 +122,30 @@ document.getElementById('okay').addEventListener('click', function () {
     //입력창에 입력된 값 가져오기
     let lines = document.getElementById('bus_line').value;
     let lines_str = String(lines);
-    const numLines = lines_str.length;
-    lines = lines*(10**-numLines);
-
+    //입력 값으로부터 버스 번호 배열 만들기
+    let linesList = lines_str.split(",");
+    const linesLength = linesList.length;
+    const arrayLength = bus_line_array.length;
+    //버스 번호 배열로부터 mobility index 소수점 뒷자리 만들기
+    let decimal = "0";
+    //저장할 String 만들기
+    for (k = 0; k < arrayLength - 1; k++) {
+        decimal = decimal.concat("0")
+    }
+    for (i = 0; i < linesLength; i++) {
+        line_num = linesList[i];
+        for (j = 0; j < arrayLength; j++) {
+            array_num = bus_line_array[j];
+            if (line_num == array_num) {
+                decimal = replaceAt(j, "1", decimal);
+            }
+        }
+    }
     //최종 모빌리티 인덱스
-    mobilityIndex += lines;
+    const dot = ".";
+    decimal = dot.concat(decimal);
+    mobilityIndex = String(mobilityIndex);
+    mobilityIndex = mobilityIndex.concat(decimal);
     
     updateMarker(NUMBER-1, mobilityIndex)
     //닫기
@@ -195,3 +217,18 @@ document.getElementById('removeMarkerButton').addEventListener('click', function
     }
     closeModal();
 });
+
+//문자열의 특정 인덱스에 있는 characteristic 변경 함수
+function replaceAt(index, replacement, input) {
+    const str_length = input.length;
+    if (index > str_length - 1) {
+        return input
+    } else {
+        let former = input.substring(0, index);
+        let latter = input.substr(index + 1, str_length - former.length - 1);
+        let result = former.concat(replacement);
+        result = result.concat(latter);
+
+        return result;
+    }
+}
