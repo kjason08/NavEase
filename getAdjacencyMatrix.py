@@ -52,7 +52,7 @@ def mToAvailability(mobilityIndex):
 
     return result
 
-#Heuristic 값: 현재 위치에서 목적지까지의 직선 거리 상을, 접근 가능한 가장 빠른 교통 자원으로 이동하는 시간
+#Heuristic 값: 현재 위치에서 목적지까지의 직선 거리
 def getHeuristic(node, current, goal):
     currentNode = node[current]
     goalNode = node[goal]
@@ -64,19 +64,25 @@ def getHeuristic(node, current, goal):
     #직선 거리 계산
     distance = getDistance(lat1, lon1, lat2, lon2)
 
-    #이용 가능한 교통 자원 파악
-    mobilityIndex = currentNode['customValue']
-    mobilityIndex = int(mobilityIndex.split(".")[0])
-    mobilityAvailable = mToAvailability(mobilityIndex)
-    v = 0
-    for i in mobilityAvailable:
-        if i > 0:
-            index = mobilityAvailable.index(i)
-            V = v_Set[index]
-            if V > v:
-                v = V
+    return distance
 
-    return distance/v
+#이동 자원에 대한 가중치가 적용된 heuristic
+def heuristicToTime(node, current, goal, mobility_index_delimiter):
+    h = getHeuristic(node, current, goal)
+    if mobility_index_delimiter == 10000:
+        h = h/v_walk
+    elif mobility_index_delimiter == 1000:
+        h = h/v_bike
+    elif mobility_index_delimiter == 100:
+        h = h/v_bike
+    elif mobility_index_delimiter == 10:
+        h = h/v_subway
+    elif mobility_index_delimiter == 1:
+        h = h/v_bus
+    else:
+        h = math.inf
+    
+    return h
 
 #G 값: 노드 간 비용 (이동 불편도)
 #변수 설명: 노드 구조 list, 인접 행렬, 부모 노드 인덱스, 인접 노드 인덱스, 모빌리티 인덱스 구분자 (1~10000)
@@ -205,7 +211,10 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
     for i in delimiters:
         structure = dict()
         structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i) + parentStructure['G']
-        structure['H'] = getHeuristic(node, adjacentIndex, goalIndex)
+        if structure['G'] == math.inf:
+            structure['H'] = math.inf
+        else:
+            structure['H'] = heuristicToTime(node, adjacentIndex, goalIndex, i)
         structure['F'] = structure['G'] + structure['H']
         structure['id'] = adjacentIndex
         if structure['F'] != math.inf:
