@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Survey Form</title>
+<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+  <div class="survey-container">
+    <h1>회원님의 정보를 알려주세요</h1>
+    <p>더 나은 경로 추천에 사용될 계획입니다.</p>
+    <form>
+      <fieldset>
+        <legend>Q. 다음 중 이용하지 못하는 이동 방법 및 교통 자원을 선택해주세요.</legend>
+        <label for="option1">
+          <input type="radio" id="option1" name="transportation" value="도보">
+          도보
+        </label>
+        <label for="option2">
+          <input type="radio" id="option2" name="transportation" value="자전거">
+          자전거
+        </label>
+        <label for="option3">
+          <input type="radio" id="option3" name="transportation" value="자가용">
+          자가용
+        </label>
+        <label for="option4">
+          <input type="radio" id="option4" name="transportation" value="시내버스">
+          시내버스
+        </label>
+        <label for="option5">
+          <input type="radio" id="option5" name="transportation" value="지하철">
+          지하철
+        </label>
+        <label for="option5">
+            <input type="radio" id="option5" name="transportation" value="기타">
+            택시
+          </label>
+          <label for="option5">
+            <input type="radio" id="option5" name="transportation" value="기타">
+            기타
+          </label>
+      </fieldset>
+      <input type="submit" value="제출">
+    </form>
+  </div>
+</body>
+</html>

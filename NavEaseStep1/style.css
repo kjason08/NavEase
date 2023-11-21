@@ -1,0 +1,51 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+  }
+  
+  .form-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  h1 {
+    color: #000;
+    margin-bottom: 10px;
+  }
+  
+  .instructions {
+    color: #666;
+    margin-bottom: 20px;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label {
+    text-align: left;
+    margin-bottom: 5px;
+  }
+  
+  input[type=text] {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  /* Placeholder for the dots */
+  /* You can add JavaScript to make a functional dots button */
+  .dots-button {
+    text-align: center;
+    font-size: 24px;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+  
