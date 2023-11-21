@@ -90,6 +90,7 @@ function openModal() {
 function closeModal() {
     const modal = document.getElementById('modal');
     modal.style.display = 'none';
+    console.log(1)
 }
 
 //버스 노선 체크 박스 상태에 따라 보이고 안 보이도록 하기
