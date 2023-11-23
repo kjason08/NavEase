@@ -2,7 +2,7 @@ import math
 import json
 
 #테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 1, 3, 4, 5, 6, 7]
-file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/markers_SSG.json"
+file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/Astar/markers_SSG.json"
 with open(file_path, 'r') as file:
     data_SSG = json.load(file)
 

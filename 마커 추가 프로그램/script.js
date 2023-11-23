@@ -22,13 +22,14 @@ function initMap() {
 
 }
 
-function addMarker(location, number, cValue) {
+function addMarker(location, number, cValue, sValue) {
     // 마커 생성
     const marker = new google.maps.Marker({
         position: location,
         map: map,
         label: number.toString(), // 마커 레이블로 번호 표시
-        customValue: cValue
+        customValue: cValue,
+        stopValue: sValue
     });
 
     // 마커를 markers 배열에 추가
@@ -46,12 +47,13 @@ function addMarker(location, number, cValue) {
     
 }
 
-function addPreviousMarker(location, number, cValue){
+function addPreviousMarker(location, number, cValue, sValue){
     const marker = new google.maps.Marker({
         position: location,
         map: map,
         label: number.toString(),
-        customValue: cValue
+        customValue: cValue,
+        stopValue: sValue
     })
 
     markers.push({ number, marker })
@@ -74,10 +76,11 @@ function removeMarker(markerToRemove) {
     NUMBER--;
 }
 
-function updateMarker(index, cValue) {
+function updateMarker(index, cValue, sValue) {
     if (index >= 0 && index < markers.length) {
         const markerInfo = markers[index];
         markerInfo.customValue = cValue;
+        markerInfo.stopValue = sValue;
     } else {
         alert('Invalid marker index');  
     }
@@ -121,7 +124,7 @@ document.getElementById('okay').addEventListener('click', function () {
         mobilityIndex += Number(el.value);
     });
 
-    //입력창에 입력된 값 가져오기
+    //입력창에 입력된 이용 가능한 버스 노선 값 가져오기
     let lines = document.getElementById('bus_line').value;
     let lines_str = String(lines);
     //입력 값으로부터 버스 번호 배열 만들기
@@ -143,13 +146,23 @@ document.getElementById('okay').addEventListener('click', function () {
             }
         }
     }
+
     //최종 모빌리티 인덱스
     const dot = ".";
     decimal = dot.concat(decimal);
     mobilityIndex = String(mobilityIndex);
     mobilityIndex = mobilityIndex.concat(decimal);
+
+    //입력창에 입력된 버스 정류장 번호 값 가져오기
+    let stop = document.getElementById('bus_stop').value;
+    let stop_str;
+    if (stop == "") {
+        stop_str = "0";
+    } else {
+        stop_str = String(stop);
+    }
     
-    updateMarker(NUMBER-1, mobilityIndex)
+    updateMarker(NUMBER-1, mobilityIndex, stop_str)
     //닫기
     closeModal();
 });
@@ -166,7 +179,7 @@ function loadMarkersFromJSON(jsonData) {
     // 마커 추가
     markerData.forEach(data => {
         const location = { lat: data.lat, lng: data.lng };
-        addPreviousMarker(location, data.number, data.customValue);
+        addPreviousMarker(location, data.number, data.customValue, data.stopValue);
         index++;
     });
 
@@ -195,7 +208,8 @@ document.getElementById('saveButton').addEventListener('click', function () {
         lat: item.marker.getPosition().lat(),
         lng: item.marker.getPosition().lng(),
         number: item.number,
-        customValue: item.customValue
+        customValue: item.customValue,
+        stopValue: item.stopValue
     }));
 
     const jsonData = JSON.stringify(markerData);
