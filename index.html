@@ -1,35 +1,69 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 
-<link rel="stylesheet" href="main_style.css">
 <head>
-    <meta charset="UTF-8">
-    <title>HTML Intro</title>
-
+  <meta charset="UTF-8">
+  <title>Map View</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDOgEizKc7rmgXErLwNO9ipv9JCHZ8O4b0&callback=initMap" async defer></script>
 </head>
 
-
 <body>
-    <div class = contents>
-        <div class = textContainer>   
-            <h1 class = mainText><span class = "navEase">NavEase</span>에 오신 것을 환영합니다!</h1>
-        </div>
-        <div class = startSignIn>
-            <div class = startImg>
-                <a href="https://naver.com" target="_blank">
-                    <img src="C:\Users\kjaso\Documents\KAIST\2023 가을\기술을 통한 사회적 혁신 실험 4\NavEase\kjason08.github.io\Start.png" alt="회원이라면">
-                <a>
-            </div>
-            <div class = "signInImg">
-                <a href="https://naver.com" target="_blank">
-                    <img src="C:\Users\kjaso\Documents\KAIST\2023 가을\기술을 통한 사회적 혁신 실험 4\NavEase\kjason08.github.io\SignIn.png" alt="회원이 아니라면">
-                <a>
-                <div class = "signInText">회원가입</div>
-            </div>
-        </div>
+
+  <div id="fixedSidebar">
+    <p class = 'NavEase'>Nav<br>Ease</p>
+    <img id="toggleButton" src="C:\Users\kjaso\Documents\KAIST\2023 가을\기술을 통한 사회적 혁신 실험 4\NavEase\kjason08.github.io\Route_icon.png" alt="길찾기">
+  </div>
+    <div id="toggleSidebar">
+    <div id="upperContent">
+      <div class="search-container1">
+        <input type="text" placeholder="출발지를 입력하세요" />
+      </div>
+      <div class="search-container2">
+          <input type="text" placeholder="목적지를 입력하세요" />
+          <button type="submit">검색</button>
+      </div>
     </div>
+    <div id="lowerContent">
+      <div class = "setting-container">
+        <h1>설정</h1>
+        <p>이용하지 못하는 교통자원</p>
+        <label for="option1">
+          <input type="radio" id="option1" name="transportation" value="도보">
+          도보
+          </label>
+          <label for="option2">
+          <input type="radio" id="option2" name="transportation" value="지하철">
+          자전거
+          </label>
+          <br>
+          <label for="option3">
+          <input type="radio" id="option3" name="transportation" value="시내버스">
+          자가용
+          </label>
+          <label for="option4">
+          <input type="radio" id="option4" name="transportation" value="택시">
+          대중교통
+          </label>
+          <br>
+          <label for="option5">
+          <input type="radio" id="option5" name="transportation" value="자전거">
+          기타
+          </label>
+        </div>
+        <div class="filter-container">
+          <p>교통 선호도</p>
+          <label for="filter-range">빠른 이동 편리한 이동</label>
+          <input type="range" id="filter-range" name="range" min="1" max="5">
+          <p>1&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;5</p>
+        </div>
+          <div class="submit-button-container">
+          <button type="submit">설정 완료하기</button>
+        </div>
+      </div>
+      </div>
+    </div>
+  <div id="map"></div>
+  <script src="script.js"></script>  
 </body>
-
-
-
 </html>

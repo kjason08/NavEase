@@ -1,0 +1,42 @@
+#fixedSidebar {
+    width: 50px;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: #333;
+    z-index: 1;
+}
+
+#toggleSidebar {
+    width: 250px;
+    height: 100%;
+    position: fixed;
+    left: -250px;
+    top: 0;
+    background: #555;
+    transition: left 0.3s;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+#upperContent, #lowerContent {
+    flex: 1;
+    padding: 10px;
+}
+
+#toggleButton {
+    width: 40px;
+    height: 40px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+#map {
+    position: absolute;
+    left: 50px; /* fixedSidebar 너비와 같게 설정 */
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
