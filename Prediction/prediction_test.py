@@ -10,7 +10,7 @@ file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/Predicti
 xgb_model = pickle.load(open(file_path, 'rb'))
 
 #데이터 입력
-Week = 0
+Week = 5
 Temperature = 12.8
 Rain = 0.1
 Snow = 0.0
@@ -26,7 +26,9 @@ pdsInput = pds.DataFrame(input, index=[0])
 
 #예측
 prediction = xgb_model.predict(pdsInput)
-print(prediction)
+bus_seat = 25
+occupancy = (abs(prediction) / bus_seat) * 100
+print(str(occupancy[0]) + " %")
 
 #Tree 시각화
 #plot_tree(xgb_model)

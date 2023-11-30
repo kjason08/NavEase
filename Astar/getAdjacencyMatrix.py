@@ -1,5 +1,9 @@
 import math
 import json
+import requests
+from getWaitingTime import WaitingTime
+
+WT = WaitingTime()
 
 #테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 1, 3, 4, 5, 6, 7]
 file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/Astar/markers_SSG.json"
@@ -11,11 +15,25 @@ with open(file_path, 'r') as file:
 #"119", "121", "300", "312", "340", "342", "604", "655", "704", "705", "706", "911", "912", "1002", "1*",]
 bus_line_array = ["5", "104", "105", "121", "911"]
 
+#인접해있는 노드의 인덱스 정보만을 가지고 인접 행렬 생성
+def getAdjacencyMatrix(adjacency_numbers):
+    length = len(adjacency_numbers)
+    adjacency_matrix = []
+    for i in range(0, length):
+        Ad = adjacency_numbers[i]
+        A = []
+        for j in range(0, length):
+            if j in Ad:
+                A.append(1)
+            else:
+                A.append(0)
+        adjacency_matrix.append(A)
+    return adjacency_matrix
+
 #인접 여부 데이터
-AMatrix_SSG = [[0,1,1,0,0,0,0,0,0,0,0,0],[1,0,0,1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,1,0,0,0],
-                  [0,1,1,0,1,0,0,0,0,0,0,0],[0,0,0,1,0,1,0,0,0,0,0,0],[0,0,0,0,1,0,1,0,0,0,0,1],
-                  [0,0,0,0,0,1,0,1,0,0,0,1],[0,0,0,0,0,0,1,0,0,0,0,0],[0,0,1,0,0,0,0,0,0,1,0,0],
-                  [0,0,0,0,0,0,0,0,1,0,1,0],[0,0,0,0,0,0,0,0,0,1,0,1],[0,0,0,0,0,1,1,0,0,0,1,0]]
+AMatrix_num = [[1,2,18],[0],[0,3,14],[2],[3],[4,6],[5,17,7],[6,7,8],[7,9],[8,10],[9,17],[10,17],[11],[12,14],[2,13,15],
+               [14,16],[15,17],[11,6,10,16],[0,19],[13,18,14]]
+AMatrix_SSG = getAdjacencyMatrix(AMatrix_num)
 
 #모빌리티 인덱스
 mobility_Index = [0, 10001, 0, 10001, 10001, 10001, 0, 0, 0, 0 ,0, 0]
@@ -27,6 +45,19 @@ v_bike = 15
 v_bus = 20
 v_subway = 100
 v_Set = [v_walk, v_bike, v_bike, v_bus, v_subway]
+
+#버스 대기가 필요한지에 대한 여부
+global shouldWait
+shouldWait = True
+
+#현재 타고있는 버스와 다음에 탈 버스
+global currentBusLine
+currentBusLine = ""
+
+#이용하고 있는 교통수단이 무엇인지 확인: 0 도보, 1 타슈, 2 자전거, 3 지하철, 4 버스
+global mobility_type, line_type
+mobility_type = []
+line_type = []
 
 #위도, 경도 기반 거리 계산: 하버사인 공식
 def getDistance(lat1, lon1, lat2, lon2):
@@ -88,6 +119,7 @@ def heuristicToTime(node, current, goal, mobility_index_delimiter):
 #G 값: 노드 간 비용 (이동 불편도)
 #변수 설명: 노드 구조 list, 인접 행렬, 부모 노드 인덱스, 인접 노드 인덱스, 모빌리티 인덱스 구분자 (1~10000)
 def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
+    global shouldWait, currentBusLine
     #인접한 노드
     adjacentNode = node[adjacent]
     #현재 노드
@@ -171,8 +203,45 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
                 if R_bus_adjacent > 0:
                     #버스 노선이 일치하는지 확인
                     if len(getCommmonBusLine(R_bus_parent_str, R_bus_adjacent_str)) > 0:
-                        #노선마다 대기 시간 비교 필요
-                        passingTime = distance/v_bus
+                        #대기 시간 불러오기
+                        waitingTime = 0
+                        bus_stop = parentNode['stopValue']
+                        if bus_stop == "0":
+                            waitingTime
+                        else:
+                            #대전광역시_정류소별 도착정보 조회 서비스 API 활용
+                            busLineList = WT.getLineList(bus_stop)
+                            waitingTimeList = WT.getMinDict(bus_stop)
+                            busLine_dealing = []
+                            waitingTime_dealing = []
+                            for i in range(0, len(busLineList)):
+                                #버스 노선 리스트에 있는지 확인
+                                if busLineList[i] in bus_line_array:
+                                    busLine_dealing.append(busLineList[i])
+                                    waitingTime_dealing.append(waitingTimeList[i])
+                            if len(busLine_dealing) > 0:
+                                waitingTimeMin = int(min(waitingTime_dealing))
+                                waitingTime = waitingTimeMin / 60
+                                min_index = waitingTime_dealing.index(min(waitingTime_dealing))
+                                #print("버스 노선: " + busLine_dealing[min_index])
+                                #print("대기 시간: " + min(waitingTime_dealing) + "분")
+                                #버스 타는 중임을 나타냄
+                                if currentBusLine == "":
+                                    currentBusLine = busLine_dealing[min_index]
+                                elif currentBusLine != busLine_dealing[min_index]:
+                                    #버스를 갈아타야 하는 경우
+                                    currentBusLine = busLine_dealing[min_index]
+                                    shouldWait = True
+                            else:
+                                waitingTime = 0
+                            
+                            if shouldWait:
+                                shouldWait = False
+                                #print("대기 필요")
+                                passingTime = distance/v_bus + waitingTime
+                            else:
+                                #print("대기 필요 없음")
+                                passingTime = distance/v_bus
                     else:
                         passingTime = math.inf
                 else:
@@ -192,7 +261,7 @@ def getBusLine(R_bus):
     numberBusLine = len(R_bus)
     lineData = []
     for i in range(0, numberBusLine):
-        if R_bus[i] == 1:
+        if R_bus[i] == "1":
             specific_line = bus_line_array[i]
             lineData.append(specific_line)
     return lineData
@@ -218,14 +287,17 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
             structure['H'] = heuristicToTime(node, adjacentIndex, goalIndex, i)
         structure['F'] = structure['G'] + structure['H']
         structure['id'] = adjacentIndex
-        if structure['F'] != math.inf:
-            structure['ParentNode'] = parentIndex
-            structureList.append(structure)
+        #if structure['F'] != math.inf:
+            #structure['ParentNode'] = parentIndex
+            #structureList.append(structure)
+        structure['ParentNode'] = parentIndex
+        structureList.append(structure)
 
     return structureList
 
 # A* 알고리즘
 def aStar(node, AMatrix, start, end):
+    global shouldWait, currentBusLine, mobility_type, line_type
     #반복 횟수
     iter = 0
 
@@ -234,6 +306,9 @@ def aStar(node, AMatrix, start, end):
     closedList = []
     openIndexList = []
     closedIndexList = []
+    open_type_list = []
+    closed_type_list = []
+
 
     # closedList에 시작 노드 추가
     startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start}
@@ -270,12 +345,14 @@ def aStar(node, AMatrix, start, end):
                     originalNode = openList[originalIndex] 
                     if newStructure['F'] < originalNode['F']:
                         openList.remove(originalNode)
-                        openIndexList.remove(originalIndex)
+                        #openIndexList.remove(originalIndex)
                         openList.append(newStructure)
                         openIndexList.append(adjacentIndex)
+                        open_type_list.append(minIndex)
                 else:
                     openList.append(newStructure)
                     openIndexList.append(adjacentIndex)
+                    open_type_list.append(minIndex)
         #openList에서 가장 작은 F값을 가지는 노드를 closedList에 추가
         #초기 값
         minFValue = math.inf
@@ -283,8 +360,10 @@ def aStar(node, AMatrix, start, end):
         for n in openList:
             if n['F'] < minFValue:
                 minFValue = n['F']
+        numOpen = len(openList)
         #최소 F값을 가지는 노드 closedList에 추가
-        for n in openList:
+        for i in range(0, numOpen):
+            n = openList[i]
             if n['F'] == minFValue:
                 closedList.append(n)
                 #최소 F값을 가지는 노드의 id
@@ -293,6 +372,17 @@ def aStar(node, AMatrix, start, end):
                 #현재 노드 설정
                 currentNode = node[minimalIndex]
                 currentIndex = minimalIndex
+                #교통 자원의 종류
+                type_index = open_type_list[i]
+                #버스에서 다른 교통수단으로 바꾸는 경우
+                if (len(mobility_type) > 0):
+                    if (mobility_type[-1] == 4):
+                        if (type_index != mobility_type[-1]):
+                            shouldWait = True
+                            currentBusLine = ""
+                closed_type_list.append(type_index)
+                mobility_type.append(type_index)
+                line_type.append(currentBusLine)
                 #현재 인접 벡터 설정
                 currentVector = AMatrix[currentIndex]
                 #부모 노드 설정
@@ -300,6 +390,7 @@ def aStar(node, AMatrix, start, end):
                 #openList에 있던 것 제거
                 openIndexList.remove(currentIndex)
                 openList.remove(n)
+                open_type_list.remove(type_index)
                 #End Node가 추가되었을 때 closedList에 {'state' : 'finished'} 추가
                 if currentIndex == end:
                     closedList.append({'state' : 'finished'})
@@ -312,7 +403,7 @@ def aStar(node, AMatrix, start, end):
             break
 
     #closedList와 closedIndexList 반환
-    return [closedList, closedIndexList]
+    return [closedList, closedIndexList, closed_type_list]
 
 #최단 경로를 표출
 def describeShortestPath(node, AMatrix, start, end):
@@ -378,5 +469,8 @@ def describeShortestPath(node, AMatrix, start, end):
     
     return result
 
-print(aStar(data_SSG, AMatrix_SSG, 0, 7)[0])
-print(describeShortestPath(data_SSG, AMatrix_SSG, 0, 7)[1])
+#print(aStar(data_SSG, AMatrix_SSG, 0, 8)[1])
+#print(aStar(data_SSG, AMatrix_SSG, 0, 8)[2])
+print(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[1])
+#print("Mobility type: " + str(mobility_type))
+#print("Bus line type: " + str(line_type))

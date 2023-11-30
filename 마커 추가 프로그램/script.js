@@ -172,7 +172,7 @@ function loadMarkersFromJSON(jsonData) {
     // 이전에 추가한 마커 삭제
     markers.forEach(item => item.marker.setMap(null));
     markers = [];
-    index = 1;
+    index = 0;
     // JSON 데이터 파싱
     const markerData = JSON.parse(jsonData);
 

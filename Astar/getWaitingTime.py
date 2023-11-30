@@ -62,7 +62,4 @@ class WaitingTime:
 
         return self.sec_list
     
-
-#예제 코드
-wt = WaitingTime()
-print(wt.getLineList('42830'))
+    
