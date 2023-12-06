@@ -424,6 +424,11 @@ def aStar(node, AMatrix, start, end):
     return [closedList, closedIndexList, mobility_type, line_type]
 
 #최단 경로를 표출
+#0-최단 경로의 노드 구조
+#1-최단 경로의 노드 인덱스
+#2-각 스텝을 이동하는 데 사용되는 교통 자원
+#3-각 스텝을 이동하는 데 사용되는 버스 노선 (없으면 '')
+#4-이동하는 데 드는 총 비용 (단위: 시간 [시])
 def describeShortestPath(node, AMatrix, start, end):
     closedListList = aStar(node, AMatrix, start, end)
     closedList = closedListList[0]
@@ -495,6 +500,12 @@ def describeShortestPath(node, AMatrix, start, end):
         line_result.append(n['line'])
     result.append(type_result)
     result.append(line_result)
+
+    #이동 비용 계산
+    expense = 0
+    for n in result[0]:
+        expense += n['G']
+    result.append(expense)
     
     return result
 
@@ -504,3 +515,4 @@ def describeShortestPath(node, AMatrix, start, end):
 print("Path: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[1]))
 print("Mobility type: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[2]))
 print("Line type: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[3]))
+print("Expense: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[4] * 60) + " min")
