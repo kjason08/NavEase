@@ -291,6 +291,7 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
             #structure['ParentNode'] = parentIndex
             #structureList.append(structure)
         structure['ParentNode'] = parentIndex
+        structure['type'] = i
         structureList.append(structure)
 
     return structureList
@@ -306,14 +307,20 @@ def aStar(node, AMatrix, start, end):
     closedList = []
     openIndexList = []
     closedIndexList = []
+
+    #교통 자원 및 노선 리스트 초기화
     open_type_list = []
     closed_type_list = []
-
+    mobility_type = []
+    line_type = []
 
     # closedList에 시작 노드 추가
     startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start}
     closedList.append(startStructure)
     closedIndexList.append(start)
+    closed_type_list.append(0)
+    mobility_type.append(0)
+    line_type.append('')
 
     # 현재 노드 초기화
     currentNode = node[start]
@@ -332,27 +339,31 @@ def aStar(node, AMatrix, start, end):
             if adjacency != 0 and adjacentIndex not in closedIndexList:
                 #인접한 노드에 대한 구조 리스트 생성
                 newStructureList = nodeStructure(node, AMatrix, end, adjacentIndex, currentIndex, parentStructure)
-                #newStructureList에서 가장 작은 F값을 갖는 구조체 찾기 
-                fList = []
+                #newStructureList에서 이용 가능한 교통 자원만 뽑아내기
+                nList = []
                 for s in newStructureList:
-                    fList.append(s['F'])
-                minF = min(fList)
-                minIndex = fList.index(minF)
-                newStructure = newStructureList[minIndex]
-                #인접한 노드가 openList의 기존에 있는 값보다 작은 F값을 가지는 경우 대체
+                    if s['F'] != math.inf:
+                        nList.append(s)
+                #인접한 노드가 openList의 기존에 있는 값보다 작은 F값을 가지는 경우 대체 (노드 인덱스와 교통 자원의 종류 확인)
                 if adjacentIndex in openIndexList:
-                    originalIndex = openIndexList.index(adjacentIndex)
-                    originalNode = openList[originalIndex] 
-                    if newStructure['F'] < originalNode['F']:
-                        openList.remove(originalNode)
-                        #openIndexList.remove(originalIndex)
-                        openList.append(newStructure)
-                        openIndexList.append(adjacentIndex)
-                        open_type_list.append(minIndex)
+                    for n in openList:
+                        if n['id'] == adjacentIndex:
+                            originalIndex = openList.index(n)
+                            #교통 자원 종류와 F값 비교
+                            for k in nList:
+                                if k['type'] == n['type']:
+                                    if k['F'] < n['F']:
+                                        openList.remove(n)
+                                        del openIndexList[originalIndex]
+                                        del open_type_list[originalIndex]
+                                        openList.append(k)
+                                        openIndexList.append(adjacentIndex)
+                                        open_type_list.append(delimiters.index(n['type']))
                 else:
-                    openList.append(newStructure)
-                    openIndexList.append(adjacentIndex)
-                    open_type_list.append(minIndex)
+                    for n in nList:
+                        openList.append(n)
+                        openIndexList.append(adjacentIndex)
+                        open_type_list.append(delimiters.index(n['type']))
         #openList에서 가장 작은 F값을 가지는 노드를 closedList에 추가
         #초기 값
         minFValue = math.inf
@@ -366,9 +377,10 @@ def aStar(node, AMatrix, start, end):
             n = openList[i]
             if n['F'] == minFValue:
                 closedList.append(n)
-                #최소 F값을 가지는 노드의 id
+                #최소 F값을 가지는 노드의 id와 type
                 minimalIndex = n['id']
                 closedIndexList.append(minimalIndex)
+                minimalType = delimiters.index(n['type'])
                 #현재 노드 설정
                 currentNode = node[minimalIndex]
                 currentIndex = minimalIndex
@@ -381,16 +393,16 @@ def aStar(node, AMatrix, start, end):
                             shouldWait = True
                             currentBusLine = ""
                 closed_type_list.append(type_index)
-                mobility_type.append(type_index)
+                mobility_type.append(minimalType)
                 line_type.append(currentBusLine)
                 #현재 인접 벡터 설정
                 currentVector = AMatrix[currentIndex]
                 #부모 노드 설정
                 parentStructure = n
                 #openList에 있던 것 제거
-                openIndexList.remove(currentIndex)
+                del openIndexList[i]
                 openList.remove(n)
-                open_type_list.remove(type_index)
+                del open_type_list[i]
                 #End Node가 추가되었을 때 closedList에 {'state' : 'finished'} 추가
                 if currentIndex == end:
                     closedList.append({'state' : 'finished'})
@@ -403,13 +415,17 @@ def aStar(node, AMatrix, start, end):
             break
 
     #closedList와 closedIndexList 반환
-    return [closedList, closedIndexList, closed_type_list]
+    #return [closedList, closedIndexList, closed_type_list, line_type]
+    return [closedList, closedIndexList, mobility_type, line_type]
 
 #최단 경로를 표출
 def describeShortestPath(node, AMatrix, start, end):
     closedListList = aStar(node, AMatrix, start, end)
     closedList = closedListList[0]
     closedList.remove({'state' : 'finished'})
+    closedListId = closedListList[1]
+    closedTypeList = closedListList[2]
+    closedLineList = closedListList[3]
 
     shortestPath = []
     shortestPathId = []
@@ -467,10 +483,19 @@ def describeShortestPath(node, AMatrix, start, end):
         if fSet[keyI] == minPathValue:
             result = [[startNode] + fSet[keyI + 'Path'], [startNodeId] + fSet[keyI + 'Id']]
     
+    #result와 closedList를 비교하면서 이용하는 교통 자원 파악
+    type_result = []
+    line_result = []
+    l_result = result[0]
+    del l_result[0]
+    for n in l_result:
+        type_result.append(delimiters.index(n['type']))
+    result.append(type_result)
+    
     return result
 
-#print(aStar(data_SSG, AMatrix_SSG, 0, 8)[1])
+#print(aStar(data_SSG, AMatrix_SSG, 0, 8)[0])
 #print(aStar(data_SSG, AMatrix_SSG, 0, 8)[2])
-print(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[1])
-#print("Mobility type: " + str(mobility_type))
-#print("Bus line type: " + str(line_type))
+print(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[0])
+print("Path: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[1]))
+print("Mobility type: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[2]))
