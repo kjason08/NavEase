@@ -1,12 +1,13 @@
 import math
 import json
-import requests
 from getWaitingTime import WaitingTime
+from Adjacency_Matrix import Adjacency
 
 WT = WaitingTime()
+Adj = Adjacency()
 
 #테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 1, 3, 4, 5, 6, 7]
-file_path = "/Users/janghyeongjun/Documents/Projects/kjason08.github.io/Astar/markers_SSG.json"
+file_path = "Astar/markers_SSG.json"
 with open(file_path, 'r') as file:
     data_SSG = json.load(file)
 
@@ -33,7 +34,7 @@ def getAdjacencyMatrix(adjacency_numbers):
 #인접 여부 데이터
 AMatrix_num = [[1,2,18],[0],[0,3,14],[2],[3],[4,6],[5,17,7],[6,7,8],[7,9],[8,10],[9,17],[10,17],[11],[12,14],[2,13,15],
                [14,16],[15,17],[11,6,10,16],[0,19],[13,18,14]]
-AMatrix_SSG = getAdjacencyMatrix(AMatrix_num)
+AMatrix_SSG = Adj.getAdjacencyMatrix(AMatrix_num)
 
 #모빌리티 인덱스
 mobility_Index = [0, 10001, 0, 10001, 10001, 10001, 0, 0, 0, 0 ,0, 0]
