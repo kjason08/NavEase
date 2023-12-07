@@ -58,6 +58,7 @@ mobility_availability = delimiters
 
 #교통 선호도 설정 함수
 def setPreference(value):
+    global user_preference
     if value < 1 or value > 2:
         user_preference = 1
     else:
@@ -65,6 +66,7 @@ def setPreference(value):
 
 #이용 가능한 교통 자원 설정: 이용하지 못하는 교통 자원의 인덱스 리스트로 입력
 def setAvailability(list):
+    global mobility_availability
     for i in list:
         del mobility_availability[i]
     return mobility_availability
