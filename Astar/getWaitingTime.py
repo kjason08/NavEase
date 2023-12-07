@@ -35,6 +35,7 @@ class WaitingTime:
     #호출된 버스 노선 목록
     def getLineList(self, arsId):
         self.setContent(arsId)
+        self.line_list = []
         for str in self.content_list:
             if '</ROUTE_NO' in str:
                 str_list = str.split("<")
@@ -45,21 +46,24 @@ class WaitingTime:
     #호출된 버스 대기 시간 목록 (분 단위)
     def getMinDict(self, arsId):
         self.setContent(arsId)
+        self.min_list = []
         for str in self.content_list:
             if '</EXTIME_MIN' in str:
                 str_list = str.split("<")
-                self.min_list.append(str_list[0])
+                self.min_list.append(int(str_list[0]))
 
         return self.min_list
     
     #호출된 버스 대기 시간 목록 (초 단위)
     def getSecDict(self, arsId):
         self.setContent(arsId)
+        self.sec_list = []
         for str in self.content_list:
             if '</EXTIME_SEC' in str:
                 str_list = str.split("<")
-                self.sec_list.append(str_list[0])
+                self.sec_list.append(int(str_list[0]))
 
         return self.sec_list
-    
-    
+
+#WT = WaitingTime()   
+#print(WT.getSecDict('42900'))
