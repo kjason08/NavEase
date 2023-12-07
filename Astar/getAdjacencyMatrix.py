@@ -45,6 +45,24 @@ AMatrix_SSG = Adj.getAdjacencyMatrix(AMatrix_num)
 mobility_Index = [0, 10001, 0, 10001, 10001, 10001, 0, 0, 0, 0 ,0, 0]
 delimiters = [10000, 1000, 100, 10, 1]
 
+#사용자의 교통 선호도와 이용 가능한 교통 자원
+global user_preference, mobility_availability
+user_preference = 1
+mobility_availability = delimiters
+
+#교통 선호도 설정 함수
+def setPreference(value):
+    if value < 1 or value > 2:
+        user_preference = 1
+    else:
+        user_preference = value
+
+#이용 가능한 교통 자원 설정: 이용하지 못하는 교통 자원의 인덱스 리스트로 입력
+def setAvailability(list):
+    for i in list:
+        del mobility_availability[i]
+    return mobility_availability
+
 #모빌리티 인덱스에 따른 속력
 v_walk = 5
 v_bike = 15
@@ -265,19 +283,20 @@ def getCommmonBusLine(R_bus_1, R_bus_2):
 
 #이동 불편도가 고려된 이동 비용
 #preference: 이동 양상에 대한 사용자 선호도
-def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter, preference, bus_stop, bus_line):
+def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter, bus_stop, bus_line):
+    global user_preference
     #버스 이용 상황에서만 고려
     if mobility_index_delimiter != 1:
-        return preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
+        return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
     else:
         if bus_stop == "0" or bus_line == "":
-            return preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
+            return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
         else:
             occupancy = OC.getOccupancy(bus_stop, bus_line)
             if occupancy < 1:
-                return preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
+                return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
             else:
-                return preference * 2.1^(1.05*(occupancy - 1)) * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
+                return user_preference * 2.1^(1.05*(occupancy - 1)) * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
 
 #open list, closed list에 들어갈 노드 구조체 리스트 생성
 #id: 노드 인덱스
@@ -289,10 +308,8 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter, pre
 #line: 이용하는 버스 노선
 #interval: 이 노드로 이동하는 스텝에서 소모되는 시간
 def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentStructure):
-    global shouldWait
+    global shouldWait, user_preference, mobility_availability
     structureList = []
-    #사용자 이동 양상 선호도 값
-    preference = 1
     #사용자 이용 가능한 교통 자원 리스트 체크
 
     #대기 정보
@@ -300,7 +317,7 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
     waiting_line = waiting_info_list[0]
     waiting_time = waiting_info_list[1]
     bus_stop = waiting_info_list[2]
-    for i in delimiters:
+    for i in mobility_availability:
         structure = dict()
         structure['id'] = adjacentIndex
         structure['ParentNode'] = parentIndex
@@ -312,20 +329,20 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
                 #대기가 필요한 경우
                 if shouldWait == True:
                     lIndex = waiting_line.index(l)
-                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, preference, bus_stop, l)
-                    + parentStructure['G'] + waiting_time[lIndex]
-                    structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i) + waiting_time[lIndex]
+                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, l)
+                    + parentStructure['G'] + waiting_time[lIndex] / 60
+                    structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i) + waiting_time[lIndex] / 60
                     structure['line'] = l
                     shouldWait = False
                 elif l != parentStructure['line']:
                     #버스를 갈아타는 경우
                     lIndex = waiting_line.index(l)
-                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, preference, bus_stop, l) 
-                    + parentStructure['G']+ waiting_time[lIndex]
-                    structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i) + waiting_time[lIndex]
+                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, l) 
+                    + parentStructure['G'] + waiting_time[lIndex] / 60
+                    structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i) + waiting_time[lIndex] / 60
                     structure['line'] = l
                 else:
-                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, preference, bus_stop, l)
+                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, l)
                     + parentStructure['G']
                     structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i)
                     structure['line'] = l
@@ -336,8 +353,8 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
                 structure['F'] = structure['G'] + structure['H']
                 structureList.append(structure)
         else:
-            structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, preference, bus_stop, "") + parentStructure['G']
-            structure['interval'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, preference, bus_stop, "")
+            structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, "") + parentStructure['G']
+            structure['interval'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, "")
             structure['line'] = ''
             if structure['G'] == math.inf:
                 structure['H'] = math.inf
