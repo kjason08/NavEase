@@ -12,9 +12,14 @@ Adj = Adjacency()
 OC = Occupancy.Occupancy()
 
 #테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 1, 3, 4, 5, 6, 7]
-file_path = "Astar/markers_SSG.json"
-with open(file_path, 'r') as file:
+file_path_SSG = "Astar/markers_SSG.json"
+with open(file_path_SSG, 'r') as file:
     data_SSG = json.load(file)
+
+#마커 데이터
+file_path = "Markers/markers.json"
+with open(file_path, 'r') as file:
+    data = json.load(file)
 
 #버스 노선
 #bus_line_array = ["1", "3", "5", "11", "48", "101", "102", "104", "105", "106", "107", "108", "113", "114", "115", "116", "117", 
@@ -40,6 +45,7 @@ def getAdjacencyMatrix(adjacency_numbers):
 AMatrix_num = [[1,2,18],[0],[0,3,14],[2],[3],[4,6],[5,17,7],[6,7,8],[7,9],[8,10],[9,17],[10,17],[11],[12,14],[2,13,15],
                [14,16],[15,17],[11,6,10,16],[0,19],[13,18,14]]
 AMatrix_SSG = Adj.getAdjacencyMatrix(AMatrix_num)
+AMatrix = Adj.getAdjacencyMatrix(Adj.getIntergrated())
 
 #모빌리티 인덱스
 mobility_Index = [0, 10001, 0, 10001, 10001, 10001, 0, 0, 0, 0 ,0, 0]
@@ -569,10 +575,7 @@ def describeShortestPath(node, AMatrix, start, end):
 
     return result
 
-#print(aStar(data_SSG, AMatrix_SSG, 0, 8)[0])
-#print(aStar(data_SSG, AMatrix_SSG, 0, 8)[3])
-#print(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[0])
-path = describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)
+path = describeShortestPath(data, AMatrix, 123, 138)
 print("Path: " + str(path[1]))
 print("Mobility type: " + str(path[2]))
 print("Line type: " + str(path[3]))
