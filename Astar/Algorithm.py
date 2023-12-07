@@ -64,11 +64,12 @@ def setPreference(value):
     else:
         user_preference = value
 
-#이용 가능한 교통 자원 설정: 이용하지 못하는 교통 자원의 인덱스 리스트로 입력
+#이용 가능한 교통 자원 설정: 이용하지 못하는 교통 자원의 delimiter 원소 리스트로 입력
 def setAvailability(list):
     global mobility_availability
     for i in list:
-        del mobility_availability[i]
+        if i in mobility_availability:
+            mobility_availability.remove(i)
     return mobility_availability
 
 #모빌리티 인덱스에 따른 속력
@@ -477,11 +478,7 @@ def aStar(node, AMatrix, start, end):
                     closedList.append({'state' : 'finished'})
                 break
         iter += 1
-        if iter > 10000:
-            print("경로를 찾는 데 시간이 너무 많이 듭니다.")
-            print(closedIndexList)
-            print(closedList)
-            break
+        
 
     #closedList와 closedIndexList 반환
     #return [closedList, closedIndexList, closed_type_list, line_type]
@@ -577,7 +574,7 @@ def describeShortestPath(node, AMatrix, start, end):
 
     return result
 
-path = describeShortestPath(data, AMatrix, 123, 138)
+path = describeShortestPath(data, AMatrix, 0, 49)
 print("Path: " + str(path[1]))
 print("Mobility type: " + str(path[2]))
 print("Line type: " + str(path[3]))
