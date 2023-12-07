@@ -23,17 +23,19 @@ class Weather:
     #기온 초단기 실황
     def getTemp(self, date, time):
         self.loadShortContent(date, time)
+        obsrValue = 0
         for str in self.content_list_short:
             if 'T1H' in str:
                 index = self.content_list_short.index(str)
                 obsrValue = float(self.content_list_short[index + 6].split("<")[0])
                 break
-
+                
         return obsrValue
     
     #1시간 강수량 초단기 실황
     def getRain(self, date, time):
         self.loadShortContent(date, time)
+        obsrValue = 0
         for str in self.content_list_short:
             if 'RN1' in str:
                 index = self.content_list_short.index(str)
@@ -57,6 +59,7 @@ class Weather:
     #1시간 신적설
     def getSnow(self, date, time):
         self.loadNormalContent(date, time)
+        obsrValue = 0
         for str in self.content_list_normal:
             if 'SNO' in str:
                 index = self.content_list_normal.index(str)

@@ -50,7 +50,9 @@ class Occupancy:
         prediction = xgb_model.predict(x_input)
 
         return prediction[0]
-
-
-OC = Occupancy()
-print(OC.getNumInBus('42750', '105'))
+    
+    #입석률 예측
+    def getOccupancy(self, bus_stop, bus_number):
+        prediction = self.getNumInBus(bus_stop, bus_number)
+        #25인승 버스 기준
+        return prediction / 25
