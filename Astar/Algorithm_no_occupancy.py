@@ -314,7 +314,7 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
     waiting_line = waiting_info_list[0]
     waiting_time = waiting_info_list[1]
     bus_stop = waiting_info_list[2]
-    for i in mobility_availability:
+    for i in delimiters:
         structure = dict()
         structure['id'] = adjacentIndex
         structure['ParentNode'] = parentIndex
