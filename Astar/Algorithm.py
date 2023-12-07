@@ -134,20 +134,20 @@ def getHeuristic(node, current, goal):
 #이동 자원에 대한 가중치가 적용된 heuristic
 def heuristicToTime(node, current, goal, mobility_index_delimiter):
     h = getHeuristic(node, current, goal)
-    if mobility_index_delimiter == 10000:
-        h = h/v_walk
-    elif mobility_index_delimiter == 1000:
-        h = h/v_bike
-    elif mobility_index_delimiter == 100:
-        h = h/v_bike
-    elif mobility_index_delimiter == 10:
-        h = h/v_subway
-    elif mobility_index_delimiter == 1:
-        h = h/v_bus
-    else:
-        h = math.inf
+    #if mobility_index_delimiter == 10000:
+        #h = h/v_walk
+    #elif mobility_index_delimiter == 1000:
+        #h = h/v_bike
+    #elif mobility_index_delimiter == 100:
+        #h = h/v_bike
+    #elif mobility_index_delimiter == 10:
+        #h = h/v_subway
+    #elif mobility_index_delimiter == 1:
+        #h = h/v_bus
+    #else:
+        #h = math.inf
     
-    return h
+    return h/v_walk
 
 #waiting_line과 waiting_time, bus_stop_list를 채우는 함수
 def checkBusStop(node, parent):
@@ -476,8 +476,13 @@ def aStar(node, AMatrix, start, end):
                 #End Node가 추가되었을 때 closedList에 {'state' : 'finished'} 추가
                 if currentIndex == end:
                     closedList.append({'state' : 'finished'})
+                    print(iter)
                 break
         iter += 1
+        if iter > 1000000:
+            print("경로를 찾는 데 시간이 너무 많이 듭니다")
+            print(closedIndexList)
+            break
         
 
     #closedList와 closedIndexList 반환
@@ -574,7 +579,7 @@ def describeShortestPath(node, AMatrix, start, end):
 
     return result
 
-path = describeShortestPath(data, AMatrix, 0, 49)
+path = describeShortestPath(data, AMatrix, 0, 122)
 print("Path: " + str(path[1]))
 print("Mobility type: " + str(path[2]))
 print("Line type: " + str(path[3]))
