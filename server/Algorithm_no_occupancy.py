@@ -65,7 +65,6 @@ user_preference = user6
 mobility_availability = delimiters
 list1 = sys.argv[3].split(',')
 
-
 #교통 선호도 설정 함수
 def setPreference(value):
     global user_preference
@@ -74,7 +73,7 @@ def setPreference(value):
     else:
         user_preference = value
 
-#이용 가능한 교통 자원 설정: 이용하지 못하는 교통 자원의 delimiter 원소 리스트로 입력
+#이용 가능한 교통 자원 설정: 이용하지 못하는 교통 자원의 인덱스 리스트로 입력
 def setAvailability(list):
     global mobility_availability
     for i in list:
@@ -145,20 +144,20 @@ def getHeuristic(node, current, goal):
 #이동 자원에 대한 가중치가 적용된 heuristic
 def heuristicToTime(node, current, goal, mobility_index_delimiter):
     h = getHeuristic(node, current, goal)
-    #if mobility_index_delimiter == 10000:
-        #h = h/v_walk
-    #elif mobility_index_delimiter == 1000:
-        #h = h/v_bike
-    #elif mobility_index_delimiter == 100:
-        #h = h/v_bike
-    #elif mobility_index_delimiter == 10:
-        #h = h/v_subway
-    #elif mobility_index_delimiter == 1:
-        #h = h/v_bus
-    #else:
-        #h = math.inf
+    if mobility_index_delimiter == 10000:
+        h = h/v_walk
+    elif mobility_index_delimiter == 1000:
+        h = h/v_bike
+    elif mobility_index_delimiter == 100:
+        h = h/v_bike
+    elif mobility_index_delimiter == 10:
+        h = h/v_subway
+    elif mobility_index_delimiter == 1:
+        h = h/v_bus
+    else:
+        h = math.inf
     
-    return h/v_walk
+    return h
 
 #waiting_line과 waiting_time, bus_stop_list를 채우는 함수
 def checkBusStop(node, parent):
@@ -301,22 +300,11 @@ def getCommmonBusLine(R_bus_1, R_bus_2):
     
     return list(intersection)
 
-#이동 불편도가 고려된 이동 비용
+#이동 불편도 고려 X
 #preference: 이동 양상에 대한 사용자 선호도
 def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter, bus_stop, bus_line):
     global user_preference
-    #버스 이용 상황에서만 고려
-    if mobility_index_delimiter != 1:
-        return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
-    else:
-        if bus_stop == "0" or bus_line == "":
-            return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
-        else:
-            occupancy = OC.getOccupancy(bus_stop, bus_line)
-            if occupancy < 1:
-                return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
-            else:
-                return user_preference * 2.1^(1.05*(occupancy - 1)) * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
+    return getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
 
 #open list, closed list에 들어갈 노드 구조체 리스트 생성
 #id: 노드 인덱스
@@ -337,7 +325,7 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
     waiting_line = waiting_info_list[0]
     waiting_time = waiting_info_list[1]
     bus_stop = waiting_info_list[2]
-    for i in mobility_availability:
+    for i in delimiters:
         structure = dict()
         structure['id'] = adjacentIndex
         structure['ParentNode'] = parentIndex
@@ -489,11 +477,11 @@ def aStar(node, AMatrix, start, end):
                     closedList.append({'state' : 'finished'})
                 break
         iter += 1
-        if iter > 1000000:
-            print("경로를 찾는 데 시간이 너무 많이 듭니다")
+        if iter > 10000:
+            print("경로를 찾는 데 시간이 너무 많이 듭니다.")
             print(closedIndexList)
+            print(closedList)
             break
-        
 
     #closedList와 closedIndexList 반환
     #return [closedList, closedIndexList, closed_type_list, line_type]

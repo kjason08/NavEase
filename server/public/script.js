@@ -55,7 +55,8 @@ document.getElementById('dataForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         console.log('Data received:', data);
-        connectMarkers(data);
+        connectMarkers(data[0]);
+        connectMarkers1(data[1]);
     })
     .catch(error => console.error('Error:', error));
 });
@@ -172,7 +173,32 @@ function connectMarkers(dataArray) {
       }
 };
 
+function connectMarkers1(dataArray) {
+    console.log("Bus Route Number:", dataArray[3][0]);
 
+    if (currentPath) {
+        currentPath.setMap(null);
+    }
+
+    dataArray[1].forEach((index, i) => {
+        if (i < dataArray[1].length - 1) {
+        // 색상 결정
+            var color = '#FF00FF'; // purple;
+
+        // 세그먼트 경로 생성
+        var pathSegment = new google.maps.Polyline({
+            path: [latLngs[dataArray[1][i]], latLngs[dataArray[1][i + 1]]],
+            geodesic: true,
+            strokeColor: color,
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+
+        // 세그먼트 경로를 지도에 추가
+        pathSegment.setMap(map);
+    }
+    });      
+};
 
 // loadMarkerData 함수 수정
 function loadMarkerData(url, callback) {
