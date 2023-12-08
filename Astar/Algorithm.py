@@ -24,7 +24,7 @@ with open(file_path, 'r') as file:
 #버스 노선
 #bus_line_array = ["1", "3", "5", "11", "48", "101", "102", "104", "105", "106", "107", "108", "113", "114", "115", "116", "117", 
 #"119", "121", "300", "312", "340", "342", "604", "655", "704", "705", "706", "911", "912", "1002", "1*",]
-bus_line_array = ["5", "104", "105", "911"]
+bus_line_array = ["5", "104", "105", "121", "911"]
 
 #인접해있는 노드의 인덱스 정보만을 가지고 인접 행렬 생성
 def getAdjacencyMatrix(adjacency_numbers):
@@ -295,6 +295,8 @@ def getCommmonBusLine(R_bus_1, R_bus_2):
 def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter, bus_stop, bus_line):
     global user_preference
     #버스 이용 상황에서만 고려
+    if bus_line == "121":
+        return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
     if mobility_index_delimiter != 1:
         return user_preference * getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
     else:
@@ -579,7 +581,7 @@ def describeShortestPath(node, AMatrix, start, end):
 
     return result
 
-path = describeShortestPath(data, AMatrix, 0, 122)
+path = describeShortestPath(data, AMatrix, 0, 120)
 print("Path: " + str(path[1]))
 print("Mobility type: " + str(path[2]))
 print("Line type: " + str(path[3]))
