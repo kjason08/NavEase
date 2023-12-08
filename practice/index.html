@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Sidebars</title>
     <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDOgEizKc7rmgXErLwNO9ipv9JCHZ8O4b0"></script>
 </head>
 <body>
+    <!-- 고정된 왼쪽 사이드바 -->
     <div id="fixedSidebar">
-        <img id="toggleButton" src="logo.png" alt="Toggle Sidebar">
+        <button id="toggleLeftSidebar">왼쪽 사이드바 열기</button>
     </div>
-    <div id="toggleSidebar">
-        <div id="upperContent">
-            <!-- 토글 사이드바의 상단 내용 -->
-        </div>
-        <div id="lowerContent">
-            <!-- 토글 사이드바의 하단 내용 -->
-        </div>
+
+    <!-- 동적 왼쪽 사이드바 -->
+    <div id="dynamicLeftSidebar" class="sidebar">
+        <button id="closeLeftSidebar">닫기</button>
+        <button id="toggleRightSidebar">오른쪽 사이드바 열기</button>
     </div>
-    <div id="map"></div>
+
+    <!-- 오른쪽 사이드바 -->
+    <div id="rightSidebar" class="sidebar">
+        <button id="closeRightSidebar">닫기</button>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Map View</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDOgEizKc7rmgXErLwNO9ipv9JCHZ8O4b0&callback=initMap" async defer></script>
+</head>
+
+<body>
+
+  <div id="fixedSidebar">
+    <img id="toggleButton" src="./Image/NavEase_logo.png" alt="길찾기">
+    
+  </div>
+  <div id="toggleSidebar">
+      <div id="upperContent">
+        <form id="dataForm">
+          <input type="text" id="startLocation" placeholder="출발지를 입력하세요" />
+          <input type="text" id="endLocation" placeholder="목적지를 입력하세요" />
+          <button id="searchButton" type="submit">검색</button>
+        </form> 
+          <button id="routeButton" type="submit">경로 보기</button>         
+          <img id="toggleTracking" src="./Image/location_tracking.jpg" alt="길찾기">
+      </div>
+    <div id="lowerContent">
+      <div class = "setting-container">
+        <h3>정보</h3>
+        <p>이용하지 못하는 교통자원</p>
+        <label for="option1">
+          <input type="checkbox" id="option1" name="transportation" value="도보">
+          도보
+          </label>
+          <label for="option2">
+          <input type="checkbox" id="option2" name="transportation" value="지하철">
+          타슈
+          </label>
+          <br>
+          <label for="option3">
+          <input type="checkbox" id="option3" name="transportation" value="시내버스">
+          자전거
+          </label>
+          <label for="option4">
+          <input type="checkbox" id="option4" name="transportation" value="택시">
+          지하철
+          </label>
+          <br>
+          <label for="option5">
+          <input type="checkbox" id="option5" name="transportation" value="자전거">
+          버스
+          </label>
+        </div>
+        <div class="filter-container">
+          <p>교통 선호도</p>
+          <label for="filter-range">빠른 이동 편리한 이동</label>
+          <input type="range" id="filter-range" name="range" min="10" max="20">
+          <p>1&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;2</p>
+        </div>
+          <div class="submit-button-container">
+          <button type="submit">설정 완료하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 오른쪽에서 나타나는 새로운 사이드바 -->
+  <div id="additionalSidebar" class="right-sidebar">
+    <!-- 닫힘 버튼 추가 -->
+    <button id="closeSidebarButton">&times;</button>
+
+    <!-- dataArray[4]의 값을 표시할 요소 추가 -->
+    <div id="dataDisplay"></div>
+    
+    <!-- 세그먼트를 표시할 컨테이너 추가 -->
+    <div id="segmentContainer"></div>
+  </div>
+
+
+  <div id="map"></div>
+  <script src="script.js"></script>  
+</body>
+</html>
