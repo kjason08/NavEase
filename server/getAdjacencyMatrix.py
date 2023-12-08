@@ -1,20 +1,39 @@
 import math
 import json
-import requests
+import sys, os
 from getWaitingTime import WaitingTime
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
 import sys
+========
+from Adjacency_Matrix import Adjacency
+#Prediction 폴더 불러오기
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname("Prediction/Occupancy"))))
+from Prediction import Occupancy
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
 
 WT = WaitingTime()
+Adj = Adjacency()
+OC = Occupancy.Occupancy()
 
 #테스트 예제: 카이스트~신세계 백화점까지의 노드 데이터 -> closedList: [0, 1, 3, 4, 5, 6, 7]
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
 file_path = "C:\\Users\\kjaso\\Documents\\KAIST\\2023 가을\\기술을 통한 사회적 혁신 실험 4\\NavEase\\kjason08.github.io\\server\\markers_SSG.json"
 with open(file_path, 'r') as file:
+========
+file_path_SSG = "Astar/markers_SSG.json"
+with open(file_path_SSG, 'r') as file:
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
     data_SSG = json.load(file)
+
+#마커 데이터
+file_path = "Markers/markers.json"
+with open(file_path, 'r') as file:
+    data = json.load(file)
 
 #버스 노선
 #bus_line_array = ["1", "3", "5", "11", "48", "101", "102", "104", "105", "106", "107", "108", "113", "114", "115", "116", "117", 
 #"119", "121", "300", "312", "340", "342", "604", "655", "704", "705", "706", "911", "912", "1002", "1*",]
-bus_line_array = ["5", "104", "105", "121", "911"]
+bus_line_array = ["5", "104", "105", "911"]
 
 #인접해있는 노드의 인덱스 정보만을 가지고 인접 행렬 생성
 def getAdjacencyMatrix(adjacency_numbers):
@@ -34,11 +53,32 @@ def getAdjacencyMatrix(adjacency_numbers):
 #인접 여부 데이터
 AMatrix_num = [[1,2,18],[0],[0,3,14],[2],[3],[4,6],[5,17,7],[6,7,8],[7,9],[8,10],[9,17],[10,17],[11],[12,14],[2,13,15],
                [14,16],[15,17],[11,6,10,16],[0,19],[13,18,14]]
-AMatrix_SSG = getAdjacencyMatrix(AMatrix_num)
+AMatrix_SSG = Adj.getAdjacencyMatrix(AMatrix_num)
+AMatrix = Adj.getAdjacencyMatrix(Adj.getIntergrated())
 
 #모빌리티 인덱스
 mobility_Index = [0, 10001, 0, 10001, 10001, 10001, 0, 0, 0, 0 ,0, 0]
 delimiters = [10000, 1000, 100, 10, 1]
+
+#사용자의 교통 선호도와 이용 가능한 교통 자원
+global user_preference, mobility_availability
+user_preference = 1
+mobility_availability = delimiters
+
+#교통 선호도 설정 함수
+def setPreference(value):
+    global user_preference
+    if value < 1 or value > 2:
+        user_preference = 1
+    else:
+        user_preference = value
+
+#이용 가능한 교통 자원 설정: 이용하지 못하는 교통 자원의 인덱스 리스트로 입력
+def setAvailability(list):
+    global mobility_availability
+    for i in list:
+        del mobility_availability[i]
+    return mobility_availability
 
 #모빌리티 인덱스에 따른 속력
 v_walk = 5
@@ -119,10 +159,36 @@ def heuristicToTime(node, current, goal, mobility_index_delimiter):
     
     return h
 
-#G 값: 노드 간 비용 (이동 불편도)
+#waiting_line과 waiting_time, bus_stop_list를 채우는 함수
+def checkBusStop(node, parent):
+    #대기 시간 불러오기
+    parentNode = node[parent]
+    waiting_line = []
+    waiting_time = []
+    bus_stop = parentNode['stopValue']
+    if bus_stop == "0":
+        return [[], [], []]
+    else:
+        busLineList = WT.getLineList(bus_stop)
+        busTimeList = WT.getMinDict(bus_stop)
+        for i in busLineList:
+            if i in bus_line_array:
+                waiting_line.append(i)
+                index = busLineList.index(i)
+                waiting_time.append(busTimeList[index])
+
+        return [waiting_line, waiting_time, bus_stop] 
+                                               
+
+#G 값: 노드 간 비용 (이동 시간)
 #변수 설명: 노드 구조 list, 인접 행렬, 부모 노드 인덱스, 인접 노드 인덱스, 모빌리티 인덱스 구분자 (1~10000)
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
 def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
     global shouldWait, currentBusLine, waiting_line, waiting_time
+========
+def getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter):
+    global currentBusLine
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
     #인접한 노드
     adjacentNode = node[adjacent]
     #현재 노드
@@ -210,6 +276,7 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
                 if R_bus_adjacent > 0:
                     #버스 노선이 일치하는지 확인
                     if len(getCommmonBusLine(R_bus_parent_str, R_bus_adjacent_str)) > 0:
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
                         #대기 시간 불러오기
                         bus_stop = parentNode['stopValue']
                         if bus_stop != "0":
@@ -220,6 +287,8 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
                                     waiting_line.append(i)
                                     index = busLineList.index(i)
                                     waiting_time.append(waitingTimeList[index])
+========
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
                         passingTime = distance/v_bus
                     else:
                         passingTime = math.inf
@@ -230,7 +299,6 @@ def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter):
             print("Wrong mobility index delimeter is put")
             passingTime = math.inf
     
-    #혼잡도, 비용 등 적용 필요
     g = passingTime
 
     return g
@@ -254,16 +322,42 @@ def getCommmonBusLine(R_bus_1, R_bus_2):
     
     return list(intersection)
 
+#이동 불편도 고려 X
+#preference: 이동 양상에 대한 사용자 선호도
+def getDiscomfort(node, AMatrix, parent, adjacent, mobility_index_delimiter, bus_stop, bus_line):
+    global user_preference
+    return getCost(node, AMatrix, parent, adjacent, mobility_index_delimiter)
+
 #open list, closed list에 들어갈 노드 구조체 리스트 생성
+#id: 노드 인덱스
+#ParentNode: 전에 있었던 노드
+#type: 이용하는 교통 자원
+#G: 이동 비용
+#H: 휴리스틱
+#F: G + H
+#line: 이용하는 버스 노선
+#interval: 이 노드로 이동하는 스텝에서 소모되는 시간
 def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentStructure):
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
     global waiting_line, waiting_time, shouldWait
+========
+    global shouldWait, user_preference, mobility_availability
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
     structureList = []
+    #사용자 이용 가능한 교통 자원 리스트 체크
+
+    #대기 정보
+    waiting_info_list = checkBusStop(node, parentIndex)
+    waiting_line = waiting_info_list[0]
+    waiting_time = waiting_info_list[1]
+    bus_stop = waiting_info_list[2]
     for i in delimiters:
         structure = dict()
         structure['id'] = adjacentIndex
         structure['ParentNode'] = parentIndex
         structure['type'] = i
         #버스 노선 추가하기
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
         if delimiters == 1:
             #가용한 노선마다 노드 구조 생성
             for l in waiting_line:
@@ -272,16 +366,38 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
                     lIndex = waiting_line.index(l)
                     structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i) + parentStructure['G'] 
                     + waiting_time[lIndex]
+========
+        if i == 1:
+            #가용한 노선마다 노드 구조 생성
+            for l in waiting_line:
+                #대기가 필요한 경우
+                if shouldWait == True:
+                    lIndex = waiting_line.index(l)
+                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, l)
+                    + parentStructure['G'] + waiting_time[lIndex] / 60
+                    structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i) + waiting_time[lIndex] / 60
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
                     structure['line'] = l
                     shouldWait = False
                 elif l != parentStructure['line']:
                     #버스를 갈아타는 경우
                     lIndex = waiting_line.index(l)
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
                     structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i) + parentStructure['G'] 
                     + waiting_time[lIndex]
                     structure['line'] = l
                 else:
                     structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i) + parentStructure['G']
+========
+                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, l) 
+                    + parentStructure['G'] + waiting_time[lIndex] / 60
+                    structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i) + waiting_time[lIndex] / 60
+                    structure['line'] = l
+                else:
+                    structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, l)
+                    + parentStructure['G']
+                    structure['interval'] = getCost(node, AMatrix, parentIndex, adjacentIndex, i)
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
                     structure['line'] = l
                 if structure['G'] == math.inf:
                     structure['H'] = math.inf
@@ -290,7 +406,12 @@ def nodeStructure(node, AMatrix, goalIndex, adjacentIndex, parentIndex, parentSt
                 structure['F'] = structure['G'] + structure['H']
                 structureList.append(structure)
         else:
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
             structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i) + parentStructure['G']
+========
+            structure['G'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, "") + parentStructure['G']
+            structure['interval'] = getDiscomfort(node, AMatrix, parentIndex, adjacentIndex, i, bus_stop, "")
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
             structure['line'] = ''
             if structure['G'] == math.inf:
                 structure['H'] = math.inf
@@ -314,8 +435,11 @@ def aStar(node, AMatrix, start, end):
     closedIndexList = []
 
     #교통 자원 및 노선 리스트 초기화
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
     open_type_list = []
     closed_type_list = []
+========
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
     mobility_type = []
     line_type = []
 
@@ -323,7 +447,10 @@ def aStar(node, AMatrix, start, end):
     startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start}
     closedList.append(startStructure)
     closedIndexList.append(start)
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
     closed_type_list.append(0)
+========
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
     mobility_type.append(0)
     line_type.append('')
 
@@ -361,15 +488,23 @@ def aStar(node, AMatrix, start, end):
                                         if k['F'] < n['F']:
                                             openList.remove(n)
                                             del openIndexList[originalIndex]
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
                                             del open_type_list[originalIndex]
                                             openList.append(k)
                                             openIndexList.append(adjacentIndex)
                                             open_type_list.append(delimiters.index(n['type']))
+========
+                                            openList.append(k)
+                                            openIndexList.append(adjacentIndex)
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
                 else:
                     for n in nList:
                         openList.append(n)
                         openIndexList.append(adjacentIndex)
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
                         open_type_list.append(delimiters.index(n['type']))
+========
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
         #openList에서 가장 작은 F값을 가지는 노드를 closedList에 추가
         #초기 값
         minFValue = math.inf
@@ -392,13 +527,16 @@ def aStar(node, AMatrix, start, end):
                 currentNode = node[minimalIndex]
                 currentIndex = minimalIndex
                 #교통 자원의 종류
-                type_index = open_type_list[i]
                 #버스에서 다른 교통수단으로 바꾸는 경우
                 if (len(mobility_type) > 0):
                     if (mobility_type[-1] == 4):
                         if (minimalType != mobility_type[-1]):
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
                             shouldWait = True
                 closed_type_list.append(type_index)
+========
+                          shouldWait = True
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
                 mobility_type.append(minimalType)
                 line_type.append(minimalLine)
                 #현재 인접 벡터 설정
@@ -408,7 +546,10 @@ def aStar(node, AMatrix, start, end):
                 #openList에 있던 것 제거
                 del openIndexList[i]
                 openList.remove(n)
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
                 del open_type_list[i]
+========
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
                 #End Node가 추가되었을 때 closedList에 {'state' : 'finished'} 추가
                 if currentIndex == end:
                     closedList.append({'state' : 'finished'})
@@ -430,6 +571,10 @@ def aStar(node, AMatrix, start, end):
 #2-각 스텝을 이동하는 데 사용되는 교통 자원
 #3-각 스텝을 이동하는 데 사용되는 버스 노선 (없으면 '')
 #4-이동하는 데 드는 총 비용 (단위: 시간 [시])
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
+========
+#5-스텝 별 이동 비용
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
 def describeShortestPath(node, AMatrix, start, end):
     closedListList = aStar(node, AMatrix, start, end)
     closedList = closedListList[0]
@@ -492,17 +637,29 @@ def describeShortestPath(node, AMatrix, start, end):
             result = [[startNode] + fSet[keyI + 'Path'], [startNodeId] + fSet[keyI + 'Id']]
     
     #result와 closedList를 비교하면서 이용하는 교통 자원 파악
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
     type_result = []
     line_result = []
+========
+    #스텝 별 이동 비용 계산
+    type_result = []
+    line_result = []
+    expense_list = []
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
     l_result = result[0]
     del l_result[0]
     for n in l_result:
         type_result.append(delimiters.index(n['type']))
         line_result.append(n['line'])
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
+========
+        expense_list.append(n['interval'])
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
     result.append(type_result)
     result.append(line_result)
 
     #이동 비용 계산
+<<<<<<<< HEAD:server/getAdjacencyMatrix.py
     expense = 0
     for n in result[0]:
         expense += n['G']
@@ -523,3 +680,18 @@ print(json.dumps(output))
 # print("Mobility type: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[2]))
 # print("Line type: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[3]))
 # print("Expense: " + str(describeShortestPath(data_SSG, AMatrix_SSG, 0, 8)[4] * 60) + " min")
+========
+    expense = sum(expense_list)
+    result.append(expense)
+
+    result.append(expense_list)
+
+    return result
+
+path = describeShortestPath(data, AMatrix, 123, 138)
+print("Path: " + str(path[1]))
+print("Mobility type: " + str(path[2]))
+print("Line type: " + str(path[3]))
+print("Expense: " + str(path[4] * 60) + " min")
+print("Expense list: " + str(path[5]))
+>>>>>>>> fa3d6c5ebafe1cca1b0d1b4d0ea1e9881e2a40ff:Astar/Algorithm_no_occupancy.py
