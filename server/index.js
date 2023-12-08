@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.get('/markers', (req, res) => {
-    const jsonFilePath = path.join(__dirname, 'data', 'markers.json');
+    const jsonFilePath = path.join(__dirname, 'Markers', 'markers.json');
     fs.readFile(jsonFilePath, 'utf8', (err, data) => {
         if (err) {
             res.status(500).send('Error reading the JSON file');

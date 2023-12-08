@@ -48,7 +48,7 @@ class WaitingTime:
         for str in self.content_list:
             if '</EXTIME_MIN' in str:
                 str_list = str.split("<")
-                self.min_list.append(str_list[0])
+                self.min_list.append(int(str_list[0]))
 
         return self.min_list
     
@@ -58,7 +58,7 @@ class WaitingTime:
         for str in self.content_list:
             if '</EXTIME_SEC' in str:
                 str_list = str.split("<")
-                self.sec_list.append(str_list[0])
+                self.sec_list.append(int(str_list[0]))
 
         return self.sec_list
     
