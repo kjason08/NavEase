@@ -478,7 +478,6 @@ def aStar(node, AMatrix, start, end):
                 #End Node가 추가되었을 때 closedList에 {'state' : 'finished'} 추가
                 if currentIndex == end:
                     closedList.append({'state' : 'finished'})
-                    print(iter)
                 break
         iter += 1
         if iter > 1000000:
@@ -581,7 +580,7 @@ def describeShortestPath(node, AMatrix, start, end):
 
     return result
 
-path = describeShortestPath(data, AMatrix, 0, 120)
+path = describeShortestPath(data, AMatrix, 1, 100)
 print("Path: " + str(path[1]))
 print("Mobility type: " + str(path[2]))
 print("Line type: " + str(path[3]))
