@@ -379,7 +379,7 @@ def aStar(node, AMatrix, start, end):
     line_type = []
 
     # closedList에 시작 노드 추가
-    startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start}
+    startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start, 'line' : ""}
     closedList.append(startStructure)
     closedIndexList.append(start)
     mobility_type.append(0)
@@ -566,7 +566,7 @@ def describeShortestPath(node, AMatrix, start, end):
 
     return result
 
-path = describeShortestPath(data, AMatrix, 123, 138)
+path = describeShortestPath(data, AMatrix, 40, 10)
 print("Path: " + str(path[1]))
 print("Mobility type: " + str(path[2]))
 print("Line type: " + str(path[3]))

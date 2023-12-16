@@ -403,7 +403,7 @@ def aStar(node, AMatrix, start, end):
     line_type = []
 
     # closedList에 시작 노드 추가
-    startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start}
+    startStructure = {'G' : 0, 'H': 0, 'ParentNode' : 0, 'id' : start, 'line':""}
     closedList.append(startStructure)
     closedIndexList.append(start)
     mobility_type.append(0)
